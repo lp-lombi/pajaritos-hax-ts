@@ -1,0 +1,19 @@
+{
+  "name": "pajaritos-hax-room",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "author": "lp-lombi",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "@types/chroma-js": "^3.1.1",
+    "chroma-js": "^3.1.2",
+    "node-haxball": "^2.1.0",
+    "path": "^0.12.7",
+    "sqlite3": "^5.1.7"
+  }
+}

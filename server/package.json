@@ -1,0 +1,16 @@
+{
+  "name": "pajaritos-hax-server",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "author": "lp-lombi",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "room": "file:../room"
+  }
+}
