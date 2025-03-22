@@ -32,49 +32,51 @@ export type CommonNetworkRoomParams = Parameters<typeof API.Room.create>[1];
 export type CreateRoomParamsOptionalGeo = Omit<CreateRoomParams, "geo"> & { geo?: GeoLocation };
 
 export interface PajaritosRoomConfig {
-  createParams: CreateRoomParamsOptionalGeo;
-  botName?: string;
+    createParams: CreateRoomParamsOptionalGeo;
+    botName?: string;
 }
 
 export interface WebApiData {
-  url: string;
-  key: string;
+    url: string;
+    key: string;
 }
 export interface CommandsPluginData {
-  discord?: string;
-  webApi: WebApiData;
+    discord?: string;
+    webApi: WebApiData;
 }
 export interface Command {
-  prefix: string;
-  name: string;
-  exec: (msg: HaxballEvent, args: string[]) => void;
-  desc: string;
-  hidden: boolean;
-  role: number;
-  vipTier: number;
+    prefix: string;
+    name: string;
+    exec: (msg: HaxballEvent, args: string[]) => void;
+    desc: string;
+    hidden: boolean;
+    role: number;
+    vipTier: number;
 }
 export type AnnouncementStyle = "info" | "info-big" | "announcement" | "announcement-big" | "hint" | "error" | "warn" | "alert";
 
 /** Jugador de Haxball con propiedades adicionales */
-export type PHPlayer = Player & {
-  showAnnouncements: boolean;
-  comba: {
-    holdTicks: number;
-  }
-  user?: {
+export type PHUser = {
     id: number;
     role: number;
     username: string;
     subscription?: {
-      tier: number;
-      startDate: string;
-      scoreMessage: string;
-      assistMessage: string;
-      joinMessage: string;
-      emoji: string;
-    }
-  };
+        tier: number;
+        startDate: string;
+        scoreMessage: string;
+        assistMessage: string;
+        joinMessage: string;
+        emoji: string;
+    };
 };
+export type PHExtraPlayerData = {
+    showAnnouncements: boolean;
+    comba: {
+        holdTicks: number;
+    };
+    user?: PHUser;
+};
+export type PHPlayer = Player & PHExtraPlayerData;
 
 export type PajaritosBaseLib = ReturnType<typeof PajaritosBaseLib>;
 
