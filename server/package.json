@@ -11,6 +11,7 @@
     "typescript": "^5.8.2"
   },
   "dependencies": {
-    "room": "file:../room"
+    "room": "file:../room",
+    "shared": "file:../shared"
   }
 }

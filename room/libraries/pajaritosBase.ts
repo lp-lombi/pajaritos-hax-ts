@@ -1,50 +1,85 @@
-import { MainReturnType, PHExtraPlayerData, PHPlayer, Player } from "../types/types";
+import { HaxballEvent, MainReturnType, Player } from "shared/types/node-haxball";
+import { PHExtraPlayerData } from "shared/types/room";
 
 export default function (API: MainReturnType) {
+    class PHPlayer {
+        constructor(private player: Player, private extraData: PHExtraPlayerData) {}
+
+        get id() {
+            return this.player.id;
+        }
+        get name() {
+            return this.player.name;
+        }
+        get team() {
+            return this.player.team;
+        }
+        get disc() {
+            return this.player.disc;
+        }
+        get isAdmin() {
+            return this.player.isAdmin;
+        }
+        /** El objeto que contiene la información del usuario registrado. En caso de no estar registrado, se genera un objeto con ID nulo y rol por defecto*/
+        get user() {
+            if (!this.extraData.user) {
+                this.extraData.user = { id: null, role: 0, username: this.name };
+            }
+            return this.extraData.user;
+        }
+        get isLoggedIn() {
+            return this.user.id !== null;
+        }
+        get comba() {
+            return this.extraData.comba;
+        }
+        get showAds() {
+            return this.extraData.showAds;
+        }
+
+        set user(user: NonNullable<PHExtraPlayerData["user"]>) {
+            this.extraData.user = user;
+        }
+    }
+
     class PajaritosBaseLib extends API.Library {
-        #playersData: Map<PHPlayer["id"], PHExtraPlayerData> = new Map();
-        constructor() {
+        constructor(
+            private playersExtraData: Map<number, PHExtraPlayerData> = new Map(),
+            private onInitQueue: Array<() => void> = []
+        ) {
             super("PajaritosBase", {
                 version: "1.0.0",
                 author: "lombi",
                 description:
-                    "Proporciona funcionalidades básicas para los plugins de Pajaritos y versiones extendidas de los objetos de la API de Haxball.",
+                    "Proporciona funcionalidades básicas para los plugins de Pajaritos, versiones extendidas de los objetos de la API de Haxball.",
             });
         }
 
         get players() {
             const players: PHPlayer[] = this.room.players.map((p) => {
-                const extendedPlayer: PHPlayer = {
-                    name: p.name,
-                    id: p.id,
-                    team: p.team,
-                    flag: p.flag,
-                    avatar: p.avatar,
-                    isAdmin: p.isAdmin,
-                    headlessAvatar: p.headlessAvatar,
-                    avatarNumber: p.avatarNumber,
-                    auth: p.auth,
-                    conn: p.conn,
-                    ping: p.ping,
-                    customClient: p.customClient,
-                    input: p.input,
-                    kickRateMaxTickCounter: p.kickRateMaxTickCounter,
-                    kickRateMinTickCounter: p.kickRateMinTickCounter,
-                    isKicking: p.isKicking,
-                    disc: p.disc,
-                    sync: p.sync,
-                    ext: p.ext,
-                    identity: p.identity,
-
-                    showAnnouncements: true,
-                    comba: {
-                        holdTicks: 0,
-                    },
-                };
-                return extendedPlayer;
+                const extraData = this.getExtraData(p);
+                return new PHPlayer(p, extraData);
             });
-            console.log(players[0].name);
             return players;
+        }
+
+        onInit(callback: () => void) {
+            this.onInitQueue.push(callback);
+        }
+
+        getExtraData(player: PHPlayer | Player): PHExtraPlayerData {
+            const data = this.playersExtraData.get(player.id);
+            if (data) {
+                return data;
+            } else {
+                const newData: PHExtraPlayerData = {
+                    user: undefined,
+                    comba: { holdTicks: 0 },
+                    showAds: true,
+                };
+                this.playersExtraData.set(player.id, newData);
+                return newData;
+            }
         }
 
         getPlayer(name: string): PHPlayer | null;
@@ -59,16 +94,9 @@ export default function (API: MainReturnType) {
             }
         }
 
-        setPlayerData(playerId: number, data: Partial<PHExtraPlayerData>) {
-            const prevData = this.#playersData.get(playerId);
-            if (prevData) {
-                for (const key in data) {
-                    if (key in prevData) {
-                        prevData[key] = data[key];
-                    }
-                }
-            }
-        }
+        override initialize = () => {
+            this.onInitQueue.forEach((callback) => callback());
+        };
     }
 
     return new PajaritosBaseLib();

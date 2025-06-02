@@ -1,7 +1,7 @@
 import HaxballRoom from "room";
 import fs from "fs";
 import path from "path";
-import { CreateRoomParamsOptionalGeo, PajaritosRoomConfig } from "room/types/types";
+import { CreateRoomParamsOptionalGeo, PajaritosRoomConfig } from "shared/types/room";
 
 function readConfig() {
   const configPath = path.join(__dirname, "roomConfig.json");

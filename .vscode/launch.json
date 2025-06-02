@@ -1,0 +1,28 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Ejecutar servidor dedicado",
+      "runtimeArgs": ["-r", "ts-node/register"],
+      "args": ["--watch"],
+      "skipFiles": ["<node_internals>/**"],
+      "cwd": "${workspaceFolder}/server",
+      "program": "${workspaceFolder}/server/index.ts"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Ejecutar API",
+      "runtimeArgs": ["-r", "ts-node/register"],
+      "args": ["--watch"],
+      "skipFiles": ["<node_internals>/**"],
+      "cwd": "${workspaceFolder}/web-api",
+      "program": "${workspaceFolder}/web-api/index.ts"
+    }
+  ]
+}

@@ -1,319 +1,211 @@
-import { MainReturnType, Player, WebApiData } from "../types/types";
+import { CommandsPlugin, PajaritosBaseLib, PHPlayer, WebApiData } from "shared/types/room";
+import { MainReturnType } from "shared/types/node-haxball";
+import { WebApiClient } from "./res/webApiClient";
+import { UserDto } from "@shared/types/webApiDTO";
 
-module.exports = (API: MainReturnType) => {
-  class AuthPlugin extends API.Plugin {
-    webApiData: WebApiData = {key: "", url: ""};
-    constructor() {
-      super("lmbAuth", true, {
-        description: "Autenticación básica para haxball.",
-        author: "lombi",
-        version: "0.3",
-        allowFlags: API.AllowFlags.CreateRoom,
-      });
-    }
-
-    calcDaysBetween(date1: Date, date2: Date) {
-      const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
-      const differenceInMilliseconds = Math.abs(date2.getMilliseconds() - date1.getMilliseconds());
-      return Math.floor(differenceInMilliseconds / oneDayInMilliseconds);
-    }
-
-    loginPlayer(player: Player, data) {
-        Object.defineProperty(player, 
-            get isLoggedIn() {
-                return true;
-            }
-        , any)
-      player.isLoggedIn = true;
-      player.role = data.role;
-
-      player.user = {
-        id: data.id,
-        role: data.role,
-      };
-
-      if (data.subscription) {
-        if (
-          data.subscription.tier >= 2 ||
-          this.calcDaysBetween(new Date(data.subscription.startDate), new Date()) < 30
-        ) {
-          player.user.subscription = data.subscription;
-        } else {
-          commands.printchat(
-            "Tu suscripción expiró! ☹️ Si la querés renovar entrá a nuestro discord en la sección de Vips.",
-            player.id,
-            "error"
-          );
+export default function (API: MainReturnType, webApiData: WebApiData) {
+    class AuthPlugin extends API.Plugin {
+        phLib!: PajaritosBaseLib;
+        commands!: CommandsPlugin;
+        webApiClient!: WebApiClient;
+        webApiData: WebApiData;
+        constructor(webApiData: WebApiData) {
+            super("lmbAuth", true, {
+                description: "Autenticación básica para haxball.",
+                author: "lombi",
+                version: "0.3",
+                allowFlags: API.AllowFlags.CreateRoom,
+            });
+            this.webApiData = webApiData;
         }
-      }
 
-      if (data.role > 1) {
-        this.room.setPlayerAdmin(player.id, true);
-      }
-    }
-    getLoggedPlayers() {
-      let loggedPlayers = [];
-      this.commands.getPlayers().forEach((p) => {
-        if (p && p.isLoggedIn) {
-          loggedPlayers.push(p);
+        calcDaysBetween(date1: Date, date2: Date) {
+            const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
+            const differenceInMilliseconds = Math.abs(
+                date2.getMilliseconds() - date1.getMilliseconds()
+            );
+            return Math.floor(differenceInMilliseconds / oneDayInMilliseconds);
         }
-      });
-      return loggedPlayers;
-    }
-    getPlayerSubscription(playerId) {
-      let p = this.commands.getPlayers().find((p) => p.id === playerId);
-      return p?.user?.subscription ? p.user.subscription : null;
-    }
-    updatePlayerSubscriptionData(playerId, subscriptionData) {
-      let p = commands.getPlayers().find((p) => p.id === playerId);
-      if (p) {
-        fetch(commands.data.webApi.url + "/subscriptions/" + p.user.subscription.userId, {
-          method: "PATCH",
-          headers: {
-            "content-type": "application/json",
-            "x-api-key": commands.data.webApi.key,
-          },
-          body: JSON.stringify(subscriptionData),
-        })
-          .then((res) => {
-            if (res.ok) {
-              commands.printchat("Se actualizó tu información", playerId);
-            }
-          })
-          .catch((err) => {
-            console.log(`Error al actualizar los datos de suscripción de ${p.name}: ` + err);
-          });
-      }
-    }
 
-    isPlayerLogged(playerId) {
-      let p = this.commands.getPlayers().find((p) => p.id === playerId);
-      if (p && p.isLoggedIn) {
-        return true;
-      }
-      return false;
-    }
-    isPlayerSubscribed(playerId) {
-      let p = this.commands.getPlayers().find((p) => p.id === playerId);
-      if (p && p.user?.subscription && p.user.subscription.tier >= 1) {
-        return true;
-      }
-      return false;
-    }
-
-    async getAllUsersStats() {
-      return new Promise((resolve, reject) => {
-        if (!this.webApiData) {
-          reject("No se inicializó webApiData");
-          return [];
-        }
-        fetch(this.webApiData.url + "/users/stats/all", {
-          headers: {
-            "x-api-key": this.webApiData.key,
-          },
-        })
-          .then((res) => {
-            if (res.ok) {
-              res.json().then((data) => {
-                resolve(data.stats);
-              });
-            } else {
-              resolve([]);
-            }
-          })
-          .catch((err) => {
-            console.log(err);
-            resolve([]);
-          });
-      });
-    }
-    async getUserStats(username) {
-      return new Promise((resolve, reject) => {
-        if (!this.webApiData) {
-          reject("No se inicializó webApiData");
-          return [];
-        }
-        fetch(this.webApiData.url + "/users/getuser", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-api-key": this.webApiData.key,
-          },
-          body: JSON.stringify({
-            username,
-          }),
-        })
-          .then((res) => {
-            if (res.ok) {
-              res.json().then((data) => {
-                resolve(data.user);
-              });
-            } else {
-              reject("No se pudo recuperar el usuario: " + err);
-            }
-          })
-          .catch((err) => {
-            reject("Error al conectarse con la API: " + err);
-          });
-      });
-    }
-    async sumUserStats(username, score, assists, wins, matches) {
-      if (!this.webApiData) {
-        reject("No se inicializó webApiData");
-        return [];
-      }
-      fetch(this.webApiData.url + "/users/stats/sum", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": this.webApiData.key,
-        },
-        body: JSON.stringify({
-          username,
-          score,
-          assists,
-          wins,
-          matches,
-        }),
-      }).catch((err) => {
-        console.log(`Error al actualizar los stats de ${username}: ` + err);
-      });
-    }
-
-    onPlayerJoin = (player) => {
-      player.isLoggedIn = false;
-    };
-
-    initialize() {
-      /**
-       * @type {import('./types').CommandsPlugin}
-       */
-      this.commands = this.room.plugins.find((p) => p.name === "lmbCommands");
-      if (!this.commands) {
-        console.log("El plugin de autenticación requiere del plugin de comandos.");
-      } else {
-        this.webApiData = this.commands.data.webApi;
-        if (!this.webApiData || !this.webApiData.url || !this.webApiData.key) {
-          console.log(
-            "El plugin de autenticación requiere que se proporcionen URL y clave para la API web."
-          );
-          return;
-        }
-        this.commands.registerCommand(
-          "!",
-          "register",
-          async (msg, args) => {
-            if (args.length !== 2) {
-              this.commands.printchat(
-                "Uso: ' !register <contraseña> <repetir contraseña> '",
-                msg.byId,
-                "error"
-              );
-            } else {
-              if (args[0] === args[1]) {
-                let player = this.commands.getPlayers().find((p) => p.id === msg.byId);
-                if (player) {
-                  try {
-                    const response = await fetch(this.webApiData.url + "/users/auth/register", {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                        "x-api-key": this.webApiData.key,
-                      },
-                      body: JSON.stringify({
-                        username: player.name,
-                        password: args[0],
-                      }),
-                    });
-                    const data = await response.json();
-
-                    if (data.success) {
-                      loginPlayer(player, data);
-                      this.commands.printchat("¡Registrado exitosamente! :)", msg.byId);
-                    } else {
-                      if (data.reason === "registered") {
-                        this.commands.printchat("El usuario ya existe.", msg.byId, "error");
-                      } else if (data.reason === "error") {
-                        this.commands.printchat(
-                          "Hubo un error, intentá más tarde.",
-                          msg.byId,
-                          "error"
-                        );
-                      }
-                    }
-                  } catch (error) {
-                    console.error(error);
-                  }
-                }
-              } else {
-                this.commands.printchat("Las contraseñas no coinciden.", msg.byId, "error");
-              }
-            }
-          },
-          "Registrarse. ' !register <contraseña> <repetir contraseña> '",
-          true
-        );
-        this.commands.registerCommand(
-          "!",
-          "login",
-          async (msg, args) => {
-            if (args.length !== 1) {
-              this.commands.printchat(
-                "Uso: ' !login <contraseña> ' | Para registrarse: ' !register <contraseña> <repetir contraseña> '",
-                msg.byId,
-                "error"
-              );
-            } else {
-              let player = this.commands.getPlayers().find((p) => p.id === msg.byId);
-              if (player) {
-                if (this.getLoggedPlayers().includes(player)) {
-                  this.commands.printchat("Ya estás logueado.", msg.byId, "error");
-                  return;
-                }
-                try {
-                  const response = await fetch(this.webApiData.url + "/users/auth/login", {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                      "x-api-key": this.webApiData.key,
-                    },
-                    body: JSON.stringify({
-                      username: player.name,
-                      password: args[0],
-                    }),
-                  });
-                  const data = await response.json();
-                  if (data.validated) {
-                    console.log("Inicio de sesión: " + player.name);
-                    if (player) {
-                      this.loginPlayer(player, data);
-                      this.commands.printchat("Sesión iniciada.", msg.byId);
-                    }
-                  } else {
-                    if (data.reason === "password") {
-                      this.commands.printchat("Contraseña incorrecta.", msg.byId, "error");
-                    } else if (data.reason === "user") {
-                      this.commands.printchat(
-                        "Usuario no registrado. Usa ' !register <contraseña> <repetir contraseña> ' para registrarte.",
-                        msg.byId,
+        updateUserData(player: PHPlayer, data: UserDto) {
+            player.user = {
+                id: data.id,
+                username: data.username,
+                role: data.role,
+            };
+            if (data.subscription) {
+                const daysSinceLastSub = this.calcDaysBetween(
+                    new Date(data.subscription.startDate),
+                    new Date()
+                );
+                if (data.subscription.tier >= 2 || daysSinceLastSub < 30) {
+                    player.user.subscription = {
+                        tier: data.subscription.tier,
+                        startDate: data.subscription.startDate,
+                        scoreAnimId: data.subscription.scoreAnimId || 0,
+                        scoreMessage: data.subscription.scoreMessage || "",
+                        assistMessage: data.subscription.assistMessage || "",
+                        joinMessage: data.subscription.joinMessage || "",
+                        emoji: data.subscription.emoji || "",
+                    };
+                } else {
+                    this.commands.chat.announce(
+                        "Tu suscripción expiró! ☹️ Si la querés renovar entrá a nuestro discord en la sección de Vips.",
+                        player.id,
                         "error"
-                      );
-                    } else if (data.reason === "error") {
-                      console.log("Error al iniciar la sesión de ID " + msg.byId);
-                    }
-                  }
-                } catch (error) {
-                  console.error("Error al iniciar sesión de ID " + msg.byId, error);
+                    );
                 }
-              }
             }
-          },
-          "Iniciar la sesión. ' !login <contraseña> '",
-          true
-        );
-      }
-    }
-  }
+            if (data.stats) {
+                player.user.stats = {
+                    score: data.stats.score,
+                    assists: data.stats.assists,
+                    matches: data.stats.matches,
+                    wins: data.stats.wins,
+                    rating: data.stats.rating,
+                };
+            }
+            if (data.role >= 2) this.room.setPlayerAdmin(player.id, true);
+        }
 
-  return { instance: new AuthPlugin(), AuthPlugin };
-};
+        getLoggedPlayers() {
+            return this.phLib.players.filter((p) => p.isLoggedIn);
+        }
+
+        isPlayerLogged(playerId: number) {
+            const p = this.phLib.getPlayer(playerId);
+            return !!p && p.isLoggedIn;
+        }
+
+        isPlayerSubscribed(playerId: number) {
+            const p = this.phLib.getPlayer(playerId);
+            return p && p.user.subscription && p.user.subscription?.tier >= 1;
+        }
+
+        async sumUserStats(
+            username: string,
+            score: number,
+            assists: number,
+            wins: number,
+            matches: number
+        ) {
+            /*             fetch(this.webApiData.url + "/users/stats/sum", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": this.webApiData.key,
+                },
+                body: JSON.stringify({
+                    username,
+                    score,
+                    assists,
+                    wins,
+                    matches,
+                }),
+            }).catch((err) => {
+                console.log(`Error al actualizar los stats de ${username}: ` + err);
+            }); */
+        }
+
+        override initialize = () => {
+            this.phLib = this.room.libraries.find(
+                (p) => (p as any).name === "PajaritosBase"
+            ) as unknown as PajaritosBaseLib;
+            this.commands = this.room.plugins.find(
+                (p) => (p as any).name === "lmbCommands"
+            ) as CommandsPlugin;
+            if (!this.commands || !this.phLib) {
+                throw new Error(
+                    "auth: El plugin de autenticación requiere de la librería 'PajaritosBase' y del plugin  'lmbCommands'."
+                );
+            }
+            this.webApiClient = new WebApiClient(this.webApiData, this.phLib);
+
+            this.commands.registerCommand(
+                "!",
+                "register",
+                async (msg, args) => {
+                    if (args.length !== 2) {
+                        this.commands.chat.announce(
+                            "Uso: ' !register <contraseña> <repetir contraseña> '",
+                            msg.byId,
+                            "error"
+                        );
+                    } else {
+                        if (args[0] === args[1]) {
+                            const player = this.phLib.getPlayer(msg.byId);
+                            if (player) {
+                                // TODO: mover a una función
+                                try {
+                                    const newUser = await this.webApiClient.requestRegister(
+                                        player.name,
+                                        args[0]
+                                    );
+                                    if (!newUser) {
+                                        this.commands.chat.announce(
+                                            "Error al registrarse. El usuario ya existe o hubo un error.",
+                                            msg.byId,
+                                            "error"
+                                        );
+                                        return;
+                                    }
+                                    this.updateUserData(player, newUser);
+                                    this.commands.chat.announce("Registro exitoso! :).", msg.byId);
+                                } catch (error) {
+                                    console.error(error);
+                                }
+                            }
+                        } else {
+                            this.commands.chat.announce(
+                                "Las contraseñas no coinciden.",
+                                msg.byId,
+                                "error"
+                            );
+                        }
+                    }
+                },
+                "Registrarse. ' !register <contraseña> <repetir contraseña> '",
+                true
+            );
+            this.commands.registerCommand(
+                "!",
+                "login",
+                async (msg, args) => {
+                    if (args.length !== 1) {
+                        this.commands.chat.announce(
+                            "Uso: ' !login <contraseña> ' | Para registrarse: ' !register <contraseña> <repetir contraseña> '",
+                            msg.byId,
+                            "error"
+                        );
+                        return;
+                    }
+                    const player = this.phLib.getPlayer(msg.byId);
+                    if (player) {
+                        if (player.isLoggedIn) {
+                            this.commands.chat.announce("Ya estás logueado.", msg.byId, "error");
+                            return;
+                        }
+                        const loggedUser = await this.webApiClient.requestLogin(
+                            player.name,
+                            args[0]
+                        );
+                        if (!loggedUser) {
+                            this.commands.chat.announce(
+                                "Error al iniciar sesión. Contraseña incorrecta o usuario no registrado.",
+                                msg.byId,
+                                "error"
+                            );
+                            return;
+                        }
+                        this.updateUserData(player, loggedUser);
+                        this.commands.chat.announce("Inicio de sesión exitoso 🕊️", msg.byId);
+                    }
+                },
+                "Iniciar la sesión. ' !login <contraseña> '",
+                true
+            );
+        };
+    }
+
+    return new AuthPlugin(webApiData);
+}
