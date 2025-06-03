@@ -1,5 +1,5 @@
 import { Database } from "sqlite3";
-import { DbUser } from "../../shared/types/webApiDatabase";
+import { DbUser } from "../types";
 
 export class UsersService {
     #database: Database;

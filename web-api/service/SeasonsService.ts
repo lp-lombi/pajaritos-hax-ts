@@ -1,5 +1,5 @@
 import { Database } from "sqlite3";
-import { DbSeason } from "../../shared/types/webApiDatabase";
+import { DbSeason } from "../types";
 
 export class SeasonsService {
     #database: Database;

@@ -6,12 +6,12 @@ import {
     SetDiscPropertiesParams,
     Stadium,
 } from "shared/types/node-haxball";
-
-import { PajaritosBaseLib } from "../types";
+import { CommandsPlugin, PajaritosBaseLib } from "../types";
 
 export enum AutobotAfkAction {
     Move = "move",
     Kick = "kick",
+    None = "none",
 }
 
 export default function (API: MainReturnType) {
@@ -135,7 +135,7 @@ export default function (API: MainReturnType) {
                         }
                     }
 
-                    if (modifyObj && !this.isScoring) {
+                    if (Object.keys(modifyObj).length > 0 && !this.isScoring) {
                         console.log("Reposicionando disco");
                         this.room.setDiscProperties(0, modifyObj);
                     }
@@ -146,15 +146,15 @@ export default function (API: MainReturnType) {
         }
 
         checkTeams() {
-            const spectators = this.spectators;
+            const spectators = this.spectators.filter((p) => p.id > 0);
             const blueTeamPlayers = this.blueTeamPlayers;
             const redTeamPlayers = this.redTeamPlayers;
 
             if (blueTeamPlayers.length < this.teamSize || redTeamPlayers.length < this.teamSize) {
                 if (spectators.length > 0) {
                     const teamToJoinId = redTeamPlayers.length <= blueTeamPlayers.length ? 1 : 2;
-                    this.room.setPlayerTeam(spectators[0].id, teamToJoinId);
                     this.commands.chat.announce("Entrás al juego.", spectators[0].id, "alert");
+                    this.room.setPlayerTeam(spectators[0].id, teamToJoinId);
 
                     if (
                         blueTeamPlayers.length < this.teamSize ||
@@ -204,7 +204,9 @@ export default function (API: MainReturnType) {
         };
 
         override onGameStart = (byId: number) => {
-            this.checkTeams();
+            API.Utils.runAfterGameTick(() => {
+                this.checkTeams();
+            }, 1)
             // A la mitad del partido se determina los jugadores elegibles para salir
             setTimeout(() => {
                 this.replaceablePlayersIds = this.phLib.players
@@ -303,8 +305,9 @@ export default function (API: MainReturnType) {
                                     break;
                                 case "equipos":
                                     if (args[1]) {
-                                        if (!isNaN(parseInt(args[1]))) {
-                                            this.teamSize = parseInt(args[1]);
+                                        const val = parseInt(args[1]);
+                                        if (!isNaN(val)) {
+                                            this.teamSize = val;
                                             this.checkTeams();
                                             this.commands.chat.announce(
                                                 "El tamaño de los equipos cambió a " + args[1],

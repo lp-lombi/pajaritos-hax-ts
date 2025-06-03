@@ -4,7 +4,7 @@ import {
     DbUser,
     DbUserStats,
     DbUserSubscription,
-} from "../../shared/types/webApiDatabase";
+} from "../types";
 import { BanDto, SeasonDto, UserDto } from "../../shared/types/webApiDTO";
 import { getDatabase } from "../db/apiDatabase";
 

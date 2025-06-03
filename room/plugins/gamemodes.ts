@@ -1,5 +1,5 @@
 import { MainReturnType } from "shared/types/node-haxball";
-import { CommandsPlugin, PajaritosBaseLib } from "shared/types/room";
+import { CommandsPlugin, PajaritosBaseLib } from "../types";
 
 export enum Gamemodes {
     X4 = 1,

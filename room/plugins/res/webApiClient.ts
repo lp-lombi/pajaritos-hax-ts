@@ -1,5 +1,5 @@
 import { DbUserSubscription } from "@shared/types/webApiDatabase";
-import { PajaritosBaseLib, WebApiData } from "shared/types/room";
+import { PajaritosBaseLib, WebApiData } from "../../types";
 import { StatsDto, UserDto } from "shared/types/webApiDTO";
 
 export class WebApiClient {

@@ -1,5 +1,5 @@
 import { HaxballEvent, MainReturnType, Player } from "shared/types/node-haxball";
-import { PHExtraPlayerData } from "shared/types/room";
+import { PHExtraPlayerData } from "../types";
 
 export default function (API: MainReturnType) {
     class PHPlayer {

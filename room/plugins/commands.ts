@@ -1,8 +1,8 @@
 import { Database } from "sqlite3";
+
 import path from "path";
 import fs from "fs";
 
-import { ChatbordPlugin, Command, CommandsPluginData, PajaritosBaseLib } from "shared/types/room";
 import {
     HaxballEvent,
     MainReturnType,
@@ -10,6 +10,7 @@ import {
     Player,
     SendChatEvent,
 } from "shared/types/node-haxball";
+import { ChatbordPlugin, Command, CommandsPluginData, PajaritosBaseLib } from "../types";
 
 export default function (API: MainReturnType, customData: CommandsPluginData, database: Database) {
     class CommandsPlugin extends API.Plugin {
@@ -174,10 +175,7 @@ export default function (API: MainReturnType, customData: CommandsPluginData, da
             }
         };
 
-        override onOperationReceived = (
-            type: OperationType,
-            event: HaxballEvent
-        ) => {
+        override onOperationReceived = (type: OperationType, event: HaxballEvent) => {
             if (type === API.OperationType.SendChat) {
                 const msg = event as SendChatEvent;
                 const isCommand = this.commandsList.find((c) => c.prefix === msg.text.charAt(0))
@@ -212,7 +210,7 @@ export default function (API: MainReturnType, customData: CommandsPluginData, da
                 this.room.setPlayerTeam(0, 0);
             }
         };
-        
+
         override initialize = () => {
             const phLib = this.room.libraries.find((l) => (l as any).name === "PajaritosBase");
             const chatPlugin = this.room.plugins.find((p) => (p as any).name === "lmbChatbord");
@@ -220,7 +218,6 @@ export default function (API: MainReturnType, customData: CommandsPluginData, da
                 throw new Error("El plugin de comandos requiere de phLib lmbChatbord");
             this.phLib = phLib as unknown as PajaritosBaseLib;
             this.chat = chatPlugin as unknown as ChatbordPlugin;
-
 
             this.registerCommand("!", "help", (msg, args) => {
                 const printCommand = (c: Command) => {
@@ -304,7 +301,7 @@ export default function (API: MainReturnType, customData: CommandsPluginData, da
                         this.chat.announce("Uso: !pm @nombre Hola!", msg.byId, "error");
                     } else {
                         if (args[0].startsWith("@")) {
-                            const name = args[0].substring(1).replaceAll("_", " ");
+                            const name = args[0].substring(1).replace(/_/g, " ");
                             const p = this.players.find((p) => p.name === name);
                             if (p) {
                                 const text = args.slice(1).join(" ");

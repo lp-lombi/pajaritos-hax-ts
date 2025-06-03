@@ -1,5 +1,5 @@
 import { Database } from "sqlite3";
-import { DbBan, DbUserSubscription } from "../../shared/types/webApiDatabase";
+import { DbBan, DbUserSubscription } from "../types";
 
 export class SubscriptionsService {
     constructor(private database: Database) {}

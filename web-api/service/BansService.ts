@@ -1,5 +1,5 @@
 import { Database } from "sqlite3";
-import { DbBan } from "../../shared/types/webApiDatabase";
+import { DbBan } from "../types";
 
 
 export class BansService {

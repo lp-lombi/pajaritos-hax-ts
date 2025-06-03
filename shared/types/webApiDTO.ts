@@ -42,3 +42,11 @@ export interface BanDto {
     isPermanent: boolean;
     isActive: boolean;
 }
+
+export interface ApiRoomDTO {
+    name: string;
+    link: string;
+    players: number;
+    maxPlayers: number;
+    ttl: number; // Time to live in seconds
+}

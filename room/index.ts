@@ -1,6 +1,6 @@
 import NodeHaxball from "node-haxball";
-import { CreateRoomParams, Library, Room } from "shared/types/node-haxball";
-import { PajaritosRoomConfig } from "shared/types/room";
+import { CreateRoomParams, Library, Room } from "@shared/types/node-haxball";
+import { PajaritosRoomConfig } from "./types";
 import { initDb } from "./plugins/res/commandsDb";
 import Commands from "./plugins/commands";
 import Chatbord from "./plugins/chatbord";
@@ -11,6 +11,8 @@ import Auth from "./plugins/auth";
 import SubsFeatures from "./plugins/subsFeatures";
 import MatchHistory from "./plugins/matchHistory";
 import Gamemodes from "./plugins/gamemodes";
+import AdminFeatures from "./plugins/adminFeatures";
+import Votes from "./plugins/vote";
 
 const haxball = NodeHaxball();
 
@@ -35,13 +37,15 @@ export default async function HaxballRoom(roomConfig: PajaritosRoomConfig) {
                 libraries: [PajaritosBase(haxball) as unknown as Library],
                 plugins: [
                     Commands(haxball, commandsData, commandsDb),
+                    Auth(haxball, commandsData.webApi),
                     Chatbord(haxball),
                     Comba(haxball),
                     Autobot(haxball),
-                    Auth(haxball, commandsData.webApi),
                     Gamemodes(haxball),
+                    AdminFeatures(haxball),
                     SubsFeatures(haxball, commandsData.webApi),
                     MatchHistory(haxball, commandsData.webApi),
+                    Votes(haxball)
                 ],
                 onOpen: (room) => {
                     room.onRoomLink = () => {

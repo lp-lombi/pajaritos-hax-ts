@@ -1,8 +1,7 @@
 import { MainReturnType } from "shared/types/node-haxball";
-import { AuthPlugin, CommandsPlugin, PajaritosBaseLib, WebApiData } from "shared/types/room";
 
 import { WebApiClient } from "./res/webApiClient";
-
+import { AuthPlugin, CommandsPlugin, PajaritosBaseLib, WebApiData } from "../types";
 
 export enum MatchHistoryEventType {
     KickBall = "KickBall",
@@ -50,10 +49,7 @@ export class MatchHistory {
     static idCounter = 0;
     id: number;
 
-    constructor(
-        public events: MatchHistoryEvent[] = [],
-        public winnerTeam: number | null = null
-    ) {
+    constructor(public events: MatchHistoryEvent[] = [], public winnerTeam: number | null = null) {
         this.id = MatchHistory.nextId();
     }
 
@@ -384,8 +380,8 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
         override onTeamGoal = (teamId: any) => {
             const scorerPlayerId = this.registerGoal(teamId);
             this.registerAssist(teamId, scorerPlayerId);
-        }
-        
+        };
+
         override onGameEnd = (winningTeamId: number | null) => {
             this.redWins += winningTeamId === 1 ? 1 : 0;
             this.blueWins += winningTeamId === 2 ? 1 : 0;
@@ -403,7 +399,7 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
                 })
             );
             this.currentMatchHistory = new MatchHistory();
-        }
+        };
 
         override onPlayerBallKick = (playerId: number) => {
             const player = this.phLib.getPlayer(playerId);
@@ -415,7 +411,7 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
                     teamId,
                     MatchHistoryEventType.KickBall
                 );
-        }
+        };
 
         override onCollisionDiscVsDisc = (
             discId1: number | null,
@@ -427,7 +423,7 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
             if (this.verifyCollissionDiscVsPlayer(discId1, discPlayerId1, discId2, discPlayerId2))
                 return;
         };
-        
+
         override initialize = () => {
             this.commands = this.room.plugins.find(
                 (p) => (p as any).name === "lmbCommands"

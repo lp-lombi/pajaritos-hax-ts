@@ -3,7 +3,7 @@ import { getDatabase } from "../db/apiDatabase";
 import { BansService } from "../service/BansService";
 import { UsersService } from "../service/UsersService";
 import Utils from "../service/Utils";
-import { DbBan } from "../../shared/types/webApiDatabase";
+import { DbBan } from "../types";
 
 const database = getDatabase();
 const usersService = new UsersService(database);

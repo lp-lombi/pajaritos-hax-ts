@@ -8,7 +8,7 @@ import {
     PHPlayer,
     PlayerModifier,
     WebApiData,
-} from "shared/types/room";
+} from "../types";
 import { WebApiClient } from "./res/webApiClient";
 import chroma from "chroma-js";
 import { DbUserSubscription } from "shared/types/webApiDatabase";

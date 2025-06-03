@@ -1,4 +1,4 @@
-import { CommandsPlugin, PajaritosBaseLib, PHPlayer, WebApiData } from "shared/types/room";
+import { CommandsPlugin, PajaritosBaseLib, PHPlayer, WebApiData } from "../types";
 import { MainReturnType } from "shared/types/node-haxball";
 import { WebApiClient } from "./res/webApiClient";
 import { UserDto } from "@shared/types/webApiDTO";

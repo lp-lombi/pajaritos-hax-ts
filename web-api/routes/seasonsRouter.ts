@@ -1,8 +1,6 @@
 import express from "express";
 import { getDatabase } from "../db/apiDatabase";
 import { SeasonsService } from "../service/SeasonsService";
-import { DbSeason } from "../../shared/types/webApiDatabase";
-import { SeasonDto } from "../../shared/types/webApiDTO";
 import Utils from "../service/Utils";
 
 const database = getDatabase();

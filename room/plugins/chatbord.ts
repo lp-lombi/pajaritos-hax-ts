@@ -1,5 +1,5 @@
 import type { MainReturnType } from "shared/types/node-haxball";
-import type { AnnouncementStyle, PajaritosBaseLib } from "shared/types/room";
+import { AnnouncementStyle, PajaritosBaseLib, PHPlayer } from "../types";
 
 export default function (API: MainReturnType) {
   class ChatbordPlugin extends API.Plugin {
@@ -112,6 +112,13 @@ export default function (API: MainReturnType) {
           maxLines > this.chatLog.length
               ? null
               : this.chatLog.splice(0, this.chatLog.length - maxLines);
+      }
+
+      getPlayersIdsString(players: PHPlayer[]) {
+          return players
+              .filter((p) => p.id !== 0)
+              .map((p) => `[${p.id}] ${p.name}`)
+              .join("\n");
       }
 
       override initialize = () => {

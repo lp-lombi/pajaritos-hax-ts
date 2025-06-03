@@ -1,6 +1,5 @@
-import { CommandsPlugin, PajaritosBaseLib, PHPlayer } from "shared/types/room";
 import { Disc, MainReturnType } from "shared/types/node-haxball";
-
+import { CommandsPlugin, PajaritosBaseLib, PHPlayer } from "../types";
 import chroma from "chroma-js";
 
 export default function (API: MainReturnType) {
