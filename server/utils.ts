@@ -1,9 +1,7 @@
 import fs from "fs";
 import path from "path";
-import jwt from "jsonwebtoken";
 import { CommandsPlugin, PajaritosBaseLib, PajaritosRoomConfig } from "room/types";
 import { PajaritosRoomConfigFile as ServerConfigFile, RoomServerUser } from "./types";
-import { NextFunction, Request, Response } from "express";
 
 const defaultConfigFile: ServerConfigFile = {
     createParams: {
@@ -71,23 +69,6 @@ function parseGlobal(roomConfig: PajaritosRoomConfig, jwtSecret: string) {
     global.webApi = roomConfig.webApi;
     global.jwtSecret = jwtSecret;
     global.room = null;
-    global.verifyToken = (req: Request, res: Response, next: NextFunction) => {
-        const token = req.headers["token"];
-        if (!token || typeof token !== "string") {
-            res.status(403).send("Token requerido");
-            return;
-        }
-        try {
-            jwt.verify(token, global.jwtSecret, (err, decoded) => {
-                if (err) return res.status(401).send("Token inválido");
-                req.user = decoded as RoomServerUser;
-                next();
-            });
-        } catch (error) {
-            console.error("Error al verificar el token:", error);
-            res.status(500).send("Error interno del servidor");
-        }
-    };
 }
 
 export function getCommandsPlugin () {

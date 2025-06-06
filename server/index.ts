@@ -1,13 +1,33 @@
 import cors from "cors";
 import { Config } from "./utils";
+import express, { Express, NextFunction, Request, Response } from "express";
+
+global.stadiumsPath = "../room/stadiums/";
+global.verifyToken = (req: Request, res: Response, next: NextFunction) => {
+    const token = req.headers["token"];
+    if (!token || typeof token !== "string") {
+        res.status(403).send("Token requerido");
+        return;
+    }
+    try {
+        jwt.verify(token, global.jwtSecret, (err, decoded) => {
+            if (err) return res.status(401).send("Token inválido");
+            req.user = decoded as RoomServerUser;
+            next();
+        });
+    } catch (error) {
+        console.error("Error al verificar el token:", error);
+        res.status(500).send("Error interno del servidor");
+    }
+};
+
 import service from "./routes/service";
 import login from "./routes/login";
 import roomRouter from "./routes/room";
 import players from "./routes/players";
 import game from "./routes/game";
-import express, { Express } from "express";
-
-global.stadiumsPath = "../room/stadiums/";
+import jwt from "jsonwebtoken";
+import { RoomServerUser } from "./types";
 
 function listen(app: Express, port: number, attempts: number) {
     app.listen(port)
@@ -31,9 +51,7 @@ async function init() {
     try {
         console.log("Iniciando servidor Pajaritos\n");
         // TODO: permitir configurar la primera vez el api url y key
-        const config = await Config.read();
-        global.webApi.key = config.webApi.key;
-        global.webApi.url = config.webApi.url;
+        await Config.read();
 
         const app = express();
         app.use(express.json());
