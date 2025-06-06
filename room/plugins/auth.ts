@@ -199,6 +199,7 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
                         }
                         this.updateUserData(player, loggedUser);
                         this.commands.chat.announce("Inicio de sesión exitoso 🕊️", msg.byId);
+                        console.log(`Inicio de sesión: ${player.user.username}      #${player.user.id}`)
                     }
                 },
                 "Iniciar la sesión. ' !login <contraseña> '",

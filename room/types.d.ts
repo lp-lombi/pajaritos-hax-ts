@@ -10,11 +10,15 @@ export type CreateRoomParamsOptionalGeo = Omit<CreateRoomParams, "geo"> & { geo?
 export interface PajaritosRoomConfig {
   createParams: CreateRoomParamsOptionalGeo;
   botName?: string;
+  webApi: WebApiData
 }
-
 export interface WebApiData {
   url: string;
   key: string;
+  user: {
+    username: string;
+    password: string;
+  }
 }
 export interface CommandsPluginData {
   discord?: string;

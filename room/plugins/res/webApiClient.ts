@@ -1,6 +1,5 @@
-import { DbUserSubscription } from "@shared/types/webApiDatabase";
 import { PajaritosBaseLib, WebApiData } from "../../types";
-import { StatsDto, UserDto } from "shared/types/webApiDTO";
+import { StatsDto, UserDto, SubscriptionDto } from "shared/types/webApiDTO";
 
 export class WebApiClient {
     constructor(private webApiData: WebApiData, private phLib: PajaritosBaseLib) {}
@@ -8,7 +7,7 @@ export class WebApiClient {
     async getUser(userId: number) {
         try {
             const response = await fetch(`${this.webApiData.url}/users/${userId}`, {
-                headers: { authorization: this.webApiData.key },
+                headers: { "x-api-key": this.webApiData.key },
             });
             if (response.ok) {
                 const data = (await response.json()) as any;
@@ -31,7 +30,7 @@ export class WebApiClient {
         try {
             const url = this.webApiData.url + "/users" + (filterWithStats ? "?stats=true" : "");
             const response = await fetch(url, {
-                headers: { authorization: this.webApiData.key },
+                headers: { "x-api-key": this.webApiData.key },
             });
             if (response.ok) {
                 const data = (await response.json()) as any;
@@ -48,14 +47,13 @@ export class WebApiClient {
 
     async requestLogin(username: string, password: string) {
         try {
-            const response = await fetch(this.webApiData.url + "/users/login", {
+            const response = await fetch(this.webApiData.url + "/auth/login", {
                 method: "POST",
-                headers: { authorization: this.webApiData.key, "Content-Type": "application/json" },
+                headers: { "x-api-key": this.webApiData.key, "Content-Type": "application/json" },
                 body: JSON.stringify({ username, password }),
             });
             if (response.ok) {
                 const data = (await response.json()) as any;
-                console.log(data);
                 if (data.user) {
                     return data.user as UserDto;
                 }
@@ -72,9 +70,9 @@ export class WebApiClient {
 
     async requestRegister(username: string, password: string) {
         try {
-            const response = await fetch(this.webApiData.url + "/users/register", {
+            const response = await fetch(this.webApiData.url + "/auth/register", {
                 method: "POST",
-                headers: { authorization: this.webApiData.key, "Content-Type": "application/json" },
+                headers: { "x-api-key": this.webApiData.key, "Content-Type": "application/json" },
                 body: JSON.stringify({ username, password }),
             });
             if (response.ok) {
@@ -98,7 +96,7 @@ export class WebApiClient {
             const response = await fetch(this.webApiData.url + "/users/" + userId + "/stats/sum", {
                 method: "POST",
                 headers: {
-                    authorization: this.webApiData.key,
+                    "x-api-key": this.webApiData.key,
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(stats),
@@ -121,7 +119,7 @@ export class WebApiClient {
 
     async updatePlayerSubscriptionData(
         playerId: number,
-        subscriptionData: Partial<DbUserSubscription>
+        subscriptionData: Partial<SubscriptionDto>
     ) {
         let p = this.phLib.getPlayer(playerId);
         if (!p || !p.user.subscription) {
@@ -134,7 +132,7 @@ export class WebApiClient {
                 {
                     method: "PATCH",
                     headers: {
-                        authorization: this.webApiData.key,
+                        "x-api-key": this.webApiData.key,
                         "content-type": "application/json",
                     },
                     body: JSON.stringify(subscriptionData),
@@ -146,7 +144,7 @@ export class WebApiClient {
             }
             const data = (await response.json()) as any;
             if (data.subscription) {
-                return data.subscription as DbUserSubscription;
+                return data.subscription as SubscriptionDto;
             } else {
                 console.error("Error al actualizar los datos de suscripción: " + response.status);
                 return null;

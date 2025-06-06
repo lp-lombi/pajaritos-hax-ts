@@ -1,0 +1,224 @@
+:root {
+    --header-height: 100px;
+    --primary-color: #d49e28;
+
+    --background: #242424;
+    --contrast: #1a1a1a;
+    --light-background: #dbdbdb;
+    --light-contrast: #ffffff;
+
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+
+    color-scheme: light dark;
+    color: rgba(255, 255, 255, 0.87);
+    background-color: var(--background);
+}
+
+#root {
+    width: 100%;
+
+    margin: 0 auto;
+    text-align: center;
+}
+
+body {
+    margin: 0;
+    display: flex;
+    min-width: 320px;
+    min-height: 100vh;
+}
+
+main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+
+    min-height: calc(100vh - var(--header-height));
+}
+
+section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+
+    min-height: 300px;
+    min-width: 325px;
+
+    border-radius: 1rem;
+    box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+h1 {
+    margin-bottom: 0px;
+}
+
+ul {
+    max-height: 200px;
+    border: 1px solid var(--contrast);
+}
+
+button {
+    width: 90%;
+    height: 50px;
+
+    border-radius: 8px;
+    border: 1px solid transparent;
+    box-shadow: 4px 4px 4px #0000003d;
+
+    padding: 0.6em 1.2em;
+    font-size: 1em;
+    font-weight: 500;
+    font-family: inherit;
+    background-color: var(--contrast);
+    cursor: pointer;
+    transition: border-color 0.25s;
+}
+
+button:hover {
+    border-color: #646cff;
+}
+
+button:focus,
+button:focus-visible {
+    outline: 4px auto -webkit-focus-ring-color;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="number"] {
+    -moz-appearance: textfield;
+
+    height: 50px;
+
+    padding: 0px;
+    margin: 0px;
+
+    border: 1px solid rgba(255, 255, 255, 0.281);
+    border-radius: 0.5rem;
+
+    text-align: center;
+    font-size: 16px;
+}
+
+.start-form {
+    height: 600px;
+    width: 100%;
+    max-width: 1000px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.start-form input[type="text"],
+.start-form input[type="password"],
+.start-form input[type="number"] {
+    width: 90%;
+    min-width: 75%;
+}
+
+.start-form.login {
+    justify-content: space-evenly;
+    height: 500px;
+}
+
+.start-form.login .form-field {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+ul {
+    list-style: none;
+    margin: 0;
+}
+
+/* classes */
+
+.main-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    width: 80%;
+    height: 70vh;
+    min-height: 700px;
+}
+
+.col50 {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    width: 50%;
+    height: 100%;
+}
+
+.container90 {
+    width: 90%;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.flex {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.col {
+    display: flex;
+    flex-direction: column;
+}
+
+.gap3 {
+    gap: 3rem;
+}
+
+.panel {
+    width: 100%;
+    height: 100%;
+}
+
+.panel-top {
+    width: 100%;
+    height: 10%;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.199);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10%;
+
+    font-size: 26px;
+    font-weight: bold;
+}
+
+.panel-bottom {
+    width: 100%;
+    height: 90%;
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --background: #fff;
+        --contrast: rgb(236, 236, 236);
+        color: black;
+    }
+}

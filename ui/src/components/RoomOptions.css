@@ -1,0 +1,349 @@
+.room-options {
+    height: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.room-info {
+    border: 1px solid var(--contrast);
+}
+
+.room-info .top {
+    border-bottom: 1px solid rgba(97, 97, 97, 0.4);
+    height: 60px;
+
+    background-color: var(--contrast);
+}
+
+.room-info .mid {
+    position: relative;
+    display: flex;
+    border-bottom: 1px solid rgba(97, 97, 97, 0.4);
+    height: 60px;
+}
+
+.room-info .score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 26px;
+    font-weight: bold;
+
+    width: 30%;
+    height: 100%;
+    background-color: var(--contrast);
+}
+
+.room-info .controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+
+    width: 70%;
+}
+
+.room-info button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+    margin: 0px;
+
+    min-width: 30px !important;
+    width: 30px !important;
+    min-height: 30px !important;
+    height: 30px !important;
+
+    border-radius: 3rem;
+}
+
+.room-info button.play {
+    background-color: rgb(103, 207, 103);
+    color: black;
+}
+
+.room-info button.pause {
+    background-color: rgb(103, 207, 193);
+    color: black;
+}
+
+.room-info button.stop {
+    background-color: rgb(207, 153, 103);
+    color: black;
+}
+
+.room-info .bottom {
+    height: 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background-color: var(--contrast);
+}
+
+.room-info .top span {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.room-info .top a {
+    font-size: 12px;
+    font-weight: normal;
+    color: rgb(184, 184, 184);
+}
+
+.room-options .panel-bottom > * {
+    margin-left: 2rem;
+    margin-right: 2rem;
+}
+
+.room-options button {
+    width: 90px;
+    height: 40px;
+    padding: 0px;
+    font-size: 12px;
+    text-align: center;
+}
+
+.room-options h3 {
+    margin-bottom: 0px;
+}
+
+.room-options ul {
+    font-size: 12px;
+    padding: 0.5rem;
+    list-style: none;
+}
+
+.room-options a {
+    font-size: 14px;
+    color: white;
+}
+/**/
+
+.room-options .tab-container {
+    margin-top: 2rem;
+    display: flex;
+    border-bottom: 1px solid rgba(0, 0, 0, 0);
+}
+
+.room-options .tab {
+    flex: 1;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-weight: bold;
+
+    width: 25%;
+    height: 40px;
+    background-color: var(--contrast);
+
+    border-top-right-radius: 2rem;
+
+    cursor: pointer;
+}
+
+.room-options .tab:hover {
+    background-color: color-mix(
+        in srgb,
+        var(--contrast) 50%,
+        var(--primary-color)
+    );
+}
+
+/**/
+
+.plugins {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.plugins > div {
+    display: flex;
+}
+
+.plugins ul {
+    min-width: 140px;
+    width: 30%;
+    padding: 0.25rem;
+    overflow-x: auto;
+}
+
+.plugins li {
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+
+    font-size: 12px;
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+.plugins li:nth-child(odd) {
+    background-color: var(--contrast);
+}
+
+.plugins li:hover {
+    background-color: color-mix(
+        in srgb,
+        var(--contrast) 50%,
+        var(--primary-color)
+    );
+}
+
+.plugins .settings-box {
+    background-color: var(--contrast);
+
+    width: 100%;
+    text-align: start;
+}
+
+.plugins .settings-box h4 {
+    text-align: center;
+}
+
+.plugins .setting {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.plugins .setting > div {
+    text-align: center;
+    width: 50%;
+}
+
+.plugins .button-container {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+}
+
+/**/
+
+.stadiums {
+    height: 40%;
+}
+
+.stadiums ul {
+    padding: 0.25rem;
+    height: 100%;
+
+    overflow-y: auto;
+}
+
+.stadiums li {
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+
+    font-size: 12px;
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+.stadiums li:nth-child(odd) {
+    background-color: var(--contrast);
+}
+
+.stadiums li:hover {
+    background-color: color-mix(
+        in srgb,
+        var(--contrast) 50%,
+        var(--primary-color)
+    );
+}
+
+.stadiums .button-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.stadiums .download {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.stadiums .download button,
+.stadiums .download input[type="text"] {
+    height: 40px;
+    width: 40%;
+}
+
+.room-options li.selected {
+    background-color: var(--primary-color);
+    color: black;
+}
+
+.bans {
+    height: 350px;
+}
+
+.bans ul {
+    max-height: 100%;
+    overflow-y: auto;
+}
+
+.bans li {
+    margin-bottom: 1rem;
+    font-size: 16px;
+    border-bottom: 1px solid var(--contrast);
+}
+
+.bans li .top {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+
+    height: 30px;
+
+    background-color: var(--contrast);
+    border-radius: 1rem;
+}
+
+.bans li .bottom {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+
+    height: 50px;
+}
+
+.bans .title {
+    height: 50px;
+    font-size: 26px;
+    background-color: var(--contrast);
+}
+
+.bans .permaBan {
+    border-radius: 1rem;
+    background-color: rgba(255, 0, 0, 0.26);
+}
+
+.bans .bottom .col50 {
+    flex-direction: row;
+    gap: 1rem;
+}
+
+.bans li .bottom button {
+    height: 30px;
+    width: 60px;
+}
+
+.bans .name {
+    font-weight: bold;
+    font-size: 16px;
+}

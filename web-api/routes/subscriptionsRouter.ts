@@ -1,12 +1,17 @@
 import express from "express";
-import { getDatabase } from "../db/apiDatabase";
+import { getDatabase } from "../db/database";
 import { SubscriptionsService } from "../service/SubscriptionsService";
 import { DbUserSubscription } from "../types";
-import Utils from "../service/Utils";
+import Utils from "../utils/Utils";
+import { deprecate } from "util";
 
 const database = getDatabase();
 const subscriptionsService = new SubscriptionsService(database);
 
+
+/**
+ * @deprecated Se usa desde el router de Users.
+ */
 export const subscriptionsRouter = express.Router();
 
 subscriptionsRouter.get("/", async (req, res) => {

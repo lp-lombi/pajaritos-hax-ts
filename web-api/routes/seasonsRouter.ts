@@ -1,7 +1,7 @@
 import express from "express";
-import { getDatabase } from "../db/apiDatabase";
+import { getDatabase } from "../db/database";
 import { SeasonsService } from "../service/SeasonsService";
-import Utils from "../service/Utils";
+import Utils from "../utils/Utils";
 
 const database = getDatabase();
 const seasonsService = new SeasonsService(database);

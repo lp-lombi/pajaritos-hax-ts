@@ -55,12 +55,27 @@ export default function (API: MainReturnType) {
             });
         }
 
+        /**
+         * Lista de jugadores de la sala (excluye al bot de Haxball).
+         */
         get players() {
             const players: PHPlayer[] = this.room.players.map((p) => {
                 const extraData = this.getExtraData(p);
                 return new PHPlayer(p, extraData);
-            });
+            }).filter(p => p.id !== 0); // Filtrar el jugador con ID 0 (el bot de Haxball)
             return players;
+        }
+
+        /**
+         * Jugador bot. Este es el jugador con ID 0.
+         */
+        get bot() {
+            const bot = this.room.getPlayer(0);
+            if (bot) {
+                const extraData = this.getExtraData(bot);
+                return new PHPlayer(bot, extraData);
+            }
+            return null;
         }
 
         onInit(callback: () => void) {

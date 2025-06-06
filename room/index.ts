@@ -27,11 +27,7 @@ export default async function HaxballRoom(roomConfig: PajaritosRoomConfig) {
             const commandsDb = await initDb();
             const commandsData = {
                 discord: "https://discord.gg/Y5ZWvjftP6",
-                webApi: {
-                    //url: "http://38.180.185.171:3000",
-                    url: "http://localhost:3000/api/v2",
-                    key: "$2b$10$UclfE7qq5svmOj7KRdNmFevfcupJrvE4wm0HicZ92oMImfx0wyInK",
-                },
+                webApi: roomConfig.webApi,
             };
             haxball.Room.create(roomConfig.createParams as CreateRoomParams, {
                 libraries: [PajaritosBase(haxball) as unknown as Library],
@@ -53,7 +49,7 @@ export default async function HaxballRoom(roomConfig: PajaritosRoomConfig) {
                     };
                 },
                 onClose(reason) {
-                    if (reason.code === 38) reject("Token inválido o expirado");
+                    if (reason?.code === 38) reject("Token inválido o expirado");
                 },
             });
         } catch (error) {

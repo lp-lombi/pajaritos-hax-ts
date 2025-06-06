@@ -6,12 +6,12 @@ import {
     DbUserSubscription,
 } from "../types";
 import { BanDto, SeasonDto, UserDto } from "../../shared/types/webApiDTO";
-import { getDatabase } from "../db/apiDatabase";
+import { getDatabase } from "../db/database";
 
-import { UsersService } from "./UsersService";
-import { StatsService } from "./StatsService";
-import { SeasonsService } from "./SeasonsService";
-import { SubscriptionsService } from "./SubscriptionsService";
+import { UsersService } from "../service/UsersService";
+import { StatsService } from "../service/StatsService";
+import { SeasonsService } from "../service/SeasonsService";
+import { SubscriptionsService } from "../service/SubscriptionsService";
 
 const usersService = new UsersService(getDatabase());
 const seasonsService = new SeasonsService(getDatabase());

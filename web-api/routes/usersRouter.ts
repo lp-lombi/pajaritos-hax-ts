@@ -1,9 +1,9 @@
 import express, { Request } from "express";
-import { getDatabase } from "../db/apiDatabase";
+import { getDatabase } from "../db/database";
 import { UsersService } from "../service/UsersService";
 import { StatsService } from "../service/StatsService";
 import { SeasonsService } from "../service/SeasonsService";
-import Utils from "../service/Utils";
+import Utils from "../utils/Utils";
 import { SubscriptionsService } from "../service/SubscriptionsService";
 import { DbUser, DbUserStats, DbUserSubscription } from "../types";
 

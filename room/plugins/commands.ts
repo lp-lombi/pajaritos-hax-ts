@@ -302,7 +302,7 @@ export default function (API: MainReturnType, customData: CommandsPluginData, da
                     } else {
                         if (args[0].startsWith("@")) {
                             const name = args[0].substring(1).replace(/_/g, " ");
-                            const p = this.players.find((p) => p.name === name);
+                            const p = this.phLib.getPlayer(name);
                             if (p) {
                                 const text = args.slice(1).join(" ");
                                 //this.chat.announce(text, "pm", p.id, msg.byId);
@@ -320,7 +320,7 @@ export default function (API: MainReturnType, customData: CommandsPluginData, da
                     if (args.length < 1) {
                         this.chat.announce("Uso: !tm Hola!", msg.byId, "error");
                     } else {
-                        const p = this.players.find((p) => p.id === msg.byId);
+                        const p = this.phLib.getPlayer(msg.byId);
                         if (p) {
                             const text = args.join(" ");
                             //this.chat.announce(text, "tm", p.id);

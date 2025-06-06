@@ -1,0 +1,13 @@
+Header {
+    width: 100%;
+    height: var(--header-height);
+    background-color: var(--contrast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+Header span {
+    font-size: 32px;
+    font-weight: bold;
+}

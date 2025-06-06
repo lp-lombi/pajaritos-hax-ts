@@ -1,11 +1,14 @@
 import bcrypt from "bcrypt";
 import express from "express";
 import jwt from "jsonwebtoken";
-import { getDatabase } from "../db/apiDatabase";
+import { getDatabase } from "../db/database";
 import { UsersService } from "../service/UsersService";
 import { StatsService } from "../service/StatsService";
 import { SeasonsService } from "../service/SeasonsService";
-import Utils from "../service/Utils";
+import Utils from "../utils/Utils";
+import { isRoot } from "../middleware/auth";
+import { ApiKey } from "../utils/ApiKey";
+import { LoginDto } from "@shared/types/webApiDTO";
 
 export const authRouter = express.Router();
 
@@ -13,6 +16,10 @@ const database = getDatabase();
 const usersService = new UsersService(database);
 const seasonsService = new SeasonsService(database);
 const statsService = new StatsService(database, seasonsService);
+
+authRouter.get("/api-key", isRoot, (req, res) => {
+    res.send({ apiKey: ApiKey.get() });
+});
 
 authRouter.post("/login", async (req, res) => {
     const { username, password } = req.body;
@@ -43,7 +50,7 @@ authRouter.post("/login", async (req, res) => {
 
         const token = jwt.sign(userDto, secret, { expiresIn: `${expiration}h` });
 
-        res.send({ token, user: userDto });
+        res.send({ token, user: userDto } as LoginDto);
     } catch (error) {
         console.error("Error al iniciar sesión:", error);
         res.status(500).send({ error: "Error al iniciar sesión" });
@@ -62,10 +69,9 @@ authRouter.post("/register", async (req, res) => {
             res.status(409).send({ error: "El nombre de usuario ya está en uso" });
             return;
         }
-        const hashedPassword = await bcrypt.hash(password, 10);
 
         database.run("BEGIN TRANSACTION");
-        const newUser = await usersService.createUser(username, hashedPassword, 0);
+        const newUser = await usersService.createUser(username, password, 0);
         const newUserStats = await statsService.createUserStats(newUser.id);
         if (!newUser || !newUserStats) {
             database.run("ROLLBACK");
@@ -83,7 +89,7 @@ authRouter.post("/register", async (req, res) => {
         const expiration = parseInt(process.env.JWT_EXPIRATION_HOURS as string);
         const token = jwt.sign(userDto, secret, { expiresIn: `${expiration}h` });
 
-        res.send({ token, user: userDto });
+        res.send({ token, user: userDto } as LoginDto);
     } catch (error) {
         database.run("ROLLBACK");
         console.error("Error al registrar el usuario:", error);

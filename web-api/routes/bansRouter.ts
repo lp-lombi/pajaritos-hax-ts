@@ -1,8 +1,8 @@
 import express from "express";
-import { getDatabase } from "../db/apiDatabase";
+import { getDatabase } from "../db/database";
 import { BansService } from "../service/BansService";
 import { UsersService } from "../service/UsersService";
-import Utils from "../service/Utils";
+import Utils from "../utils/Utils";
 import { DbBan } from "../types";
 
 const database = getDatabase();

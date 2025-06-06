@@ -1,3 +1,8 @@
+export interface LoginDto {
+    token: string;
+    user: UserDto;
+}
+
 export interface StatsDto {
     score: number;
     assists: number;
@@ -12,15 +17,7 @@ export interface UserDto {
     role: number;
     discordId: string | null;
     stats: StatsDto | null;
-    subscription: {
-        tier: number;
-        startDate: string;
-        scoreAnimId: number | null;
-        scoreMessage: string | null;
-        assistMessage: string | null;
-        joinMessage: string | null;
-        emoji: string | null;
-    } | null;
+    subscription: SubscriptionDto | null;
 }
 
 export interface SeasonDto {
@@ -41,6 +38,16 @@ export interface BanDto {
     auth: string;
     isPermanent: boolean;
     isActive: boolean;
+}
+
+export interface SubscriptionDto {
+    tier: number;
+    startDate: string;
+    scoreAnimId: number | null;
+    scoreMessage: string | null;
+    assistMessage: string | null;
+    joinMessage: string | null;
+    emoji: string | null;
 }
 
 export interface ApiRoomDTO {

@@ -1,5 +1,7 @@
 import { Database } from "sqlite3";
 import { DbUser } from "../types";
+import bcrypt from "bcrypt";
+
 
 export class UsersService {
     #database: Database;
@@ -57,16 +59,17 @@ export class UsersService {
         role: number,
         discordId: string | null = null
     ): Promise<DbUser> {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
+            const hashedPassword = await bcrypt.hash(password, 10);
             this.#database.run(
                 "INSERT INTO users (username, password, role, discordId) VALUES (?, ?, ?, ?)",
-                [username, password, role],
+                [username, hashedPassword, role],
                 function (err) {
                     if (err) {
                         console.error(`Error al crear el usuario ${username}: ${err}`);
                         return reject(err);
                     }
-                    resolve({ id: this.lastID, username, password, role, discordId });
+                    resolve({ id: this.lastID, username, password: hashedPassword, role, discordId });
                 }
             );
         });
