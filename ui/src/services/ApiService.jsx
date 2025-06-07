@@ -132,7 +132,13 @@ export const ApiService = ({ children }) => {
                 if (!res.ok) throw new Error("Error al obtener bans");
                 return res.json();
             })
-            .then((data) => setPermaBans(data))
+            .then((data) => {
+                if (!data.bans) {
+                    console.log("No se encontraron bans permanentes");
+                    return;
+                }
+                setPermaBans(data.bans);
+            })
             .catch((err) => console.log(err));
     };
 

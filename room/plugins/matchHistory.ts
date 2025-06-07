@@ -377,6 +377,17 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
             );
         }
 
+        fileMatchHistory = () => {
+            this.currentMatchHistory.registerEvent(0, 0, 0, MatchHistoryEventType.GameEnd);
+            // Se descartan los eventos de touch ball debido a que pueden ser demasiados y ya no son de utilidad
+            this.previousMatchesHistory.events.push(
+                ...this.currentMatchHistory.events.filter((event) => {
+                    return event?.type !== MatchHistoryEventType.TouchBall;
+                })
+            );
+            this.currentMatchHistory = new MatchHistory();
+        }
+
         override onTeamGoal = (teamId: any) => {
             const scorerPlayerId = this.registerGoal(teamId);
             this.registerAssist(teamId, scorerPlayerId);
@@ -391,15 +402,12 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
 
             this.printEndMatchStats();
 
-            this.currentMatchHistory.registerEvent(0, 0, 0, MatchHistoryEventType.GameEnd);
-            // Se descartan los eventos de touch ball debido a que pueden ser demasiados y ya no son de utilidad
-            this.previousMatchesHistory.events.push(
-                ...this.currentMatchHistory.events.filter((event) => {
-                    return event?.type !== MatchHistoryEventType.TouchBall;
-                })
-            );
-            this.currentMatchHistory = new MatchHistory();
+            this.fileMatchHistory();
         };
+
+        override onGameStop = () => {
+            this.fileMatchHistory();
+        }
 
         override onPlayerBallKick = (playerId: number) => {
             const player = this.phLib.getPlayer(playerId);

@@ -1,18 +1,17 @@
 import express from "express";
 import { getDatabase } from "../db/database";
 import { BansService } from "../service/BansService";
-import { UsersService } from "../service/UsersService";
 import Utils from "../utils/Utils";
 import { DbBan } from "../types";
 
 const database = getDatabase();
-const usersService = new UsersService(database);
 const bansService = new BansService(database);
 
 export const bansRouter = express.Router();
 
 bansRouter.get("/", async (req, res) => {
     try {
+        const isPermanent = req.query.isPermanent === "true";
         bansService.getAllBans().then(async (bans) => {
             const bannedUsers = await Promise.all(
                 bans.map(async (ban) => {
@@ -24,8 +23,9 @@ bansRouter.get("/", async (req, res) => {
                         : null;
                     return Utils.createBanDto(ban, bannedUser, bannedByUser);
                 })
-            );
-            res.json({ bans: bannedUsers });
+            )
+            const filteredBans = bannedUsers.filter(ban => ban.isPermanent === isPermanent);
+            res.json({ bans: filteredBans });
         });
     } catch (error) {
         console.error("Error al obtener los bans:", error);

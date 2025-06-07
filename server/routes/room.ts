@@ -80,6 +80,7 @@ roomRouter.post("/start", async (req, res) => {
             };
             Config.createNewConfigFile(path.join(`${__dirname}/../roomConfig.json`), newFile);
 
+            console.log(`\n- ** Sala iniciada **\n- ${global.room.name} - ${global.room.link}`);
             res.send(`Sala iniciada: ${global.room.name} - ${global.room.link}`)
         } catch (e) {
             console.log("Error al iniciar la sala:", e);
@@ -111,7 +112,7 @@ roomRouter.get("/", (req, res) => {
             plugins: Array<Plugin>(),
             stadiums: Array<string>(),
             bannedPlayers: global.room.banList.map((b) => {
-                let banData: any;
+                let banData: any = {};
                 if (b.type === 0) {
                     banData.value = {
                         pId: (b.value as any).pId,
@@ -178,9 +179,17 @@ roomRouter.get("/status", (req, res) => {
 
 roomRouter.get("/config", async (req, res) => {
     try {
-        const config = JSON.stringify(await Config.read());
+        const config = await Config.read();
         res.setHeader("Content-Type", "application/json");
-        res.end(config);
+        res.end(
+            JSON.stringify({
+                roomName: config.createParams.name,
+                roomPassword: config.createParams.password,
+                maxPlayers: config.createParams.maxPlayerCount,
+                botName: config.botName,
+                token: config.createParams.token,
+            })
+        );
     } catch (e) {
         console.log(e);
         res.status(500).send("Error reading config file");
@@ -263,7 +272,7 @@ roomRouter.post("/kick", (req, res) => {
             const byUserId = parseInt(req.query.byUserId as string);
             const reason = req.query.reason
                 ? (req.query.reason as string)
-                : "Sin razón especificada";
+                : "";
             const isBanned = req.query.ban === "true";
 
             global.room.kickPlayer(playerId, reason, isBanned);

@@ -26,12 +26,14 @@ service.delete("/bans/perma/:id", async (req: Request, res: Response) => {
     if (id && !isNaN(Number(id))) {
         try {
             const response = await fetch(global.webApi.url + "/bans/" + id, {
-                method: "DELETE",
-                headers: { "x-api-key": global.webApi.key },
+                method: "PUT",
+                headers: { "x-api-key": global.webApi.key, "Content-Type": "application/json" },
+                body: JSON.stringify({ isActive: false }), // Cambiamos el estado a no permanente
             });
             if (response.ok) {
                 res.send("Permaban eliminado");
             } else {
+                console.error("Error al eliminar permaban:", response.statusText);
                 throw new Error("Error al eliminar permaban");
             }
         } catch (err) {
