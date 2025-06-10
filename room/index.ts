@@ -26,13 +26,16 @@ const haxball = NodeHaxball();
 export default async function HaxballRoom(roomConfig: PajaritosRoomConfig) {
     return new Promise<Room>(async (resolve, reject) => {
         try {
-            if (!roomConfig.createParams.geo)
+            if (!roomConfig.createParams.geo) {
+                console.log("Obteniendo geolocalización...");
                 roomConfig.createParams.geo = await haxball.Utils.getGeo();
+            }
             const commandsDb = await initDb();
             const commandsData = {
                 discord: "https://discord.gg/Y5ZWvjftP6",
                 webApi: roomConfig.webApi,
             };
+            console.log(roomConfig.createParams)
             haxball.Room.create(roomConfig.createParams as CreateRoomParams, {
                 libraries: [PajaritosBase(haxball) as unknown as Library],
                 plugins: [
