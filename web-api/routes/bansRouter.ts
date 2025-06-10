@@ -38,7 +38,7 @@ bansRouter.post("/", async (req, res) => {
     const startDate = new Date().toISOString();
     if (!days) days = 0;
     if (!isPermanent) isPermanent = false;
-    if (!reason) reason = "No especificado";
+    if (!reason) reason = "";
 
     if (!ip && !auth) {
         res.status(400).json({ error: "Faltan una ip o un auth de haxball a registrar" });

@@ -44,6 +44,8 @@ export default class Utils {
             username: user.username,
             role: user.role,
             discordId: user.discordId,
+            createDate: user.createDate,
+            lastLoginDate: user.lastLoginDate,
             stats: userStats
                 ? {
                       score: userStats.score,
@@ -108,9 +110,9 @@ export default class Utils {
         }
     }
 
-    static async getAllUsersDto(filterWithStats = false): Promise<UserDto[]> {
+    static async getAllUsersDto(filterWithStats = false, filterSubscribed = false): Promise<UserDto[]> {
         try {
-            const users = await usersService.getAllUsers(filterWithStats);
+            const users = await usersService.getAllUsers(filterWithStats, filterSubscribed);
             const usersDto: UserDto[] = [];
             for (const user of users) {
                 const userStats = await statsService.getStatsByUserId(user.id);

@@ -59,6 +59,46 @@ export const ApiService = ({ children }) => {
         });
     };
 
+    const fetchUsers = (subscribed = false) => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const res = await fetch(`/service/users${subscribed ? "?subscribed=true" : ""}`, {
+                    headers: {
+                        token: apiToken,
+                    },
+                });
+                if (!res.ok) {
+                    throw new Error("El servidor devolvió un error");
+                }
+                const data = await res.json();
+                if (!data.users) {
+                    throw new Error("No se encontraron usuarios");
+                }
+                resolve(data.users);
+            } catch (error) {
+                console.error("Error al obtener usuarios:", error);
+                resolve([]);
+            }
+        });
+    };
+
+    const createSubscription = (userId, tier) => {
+        fetch(`/service/users/${userId}/subscription`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                token: apiToken,
+            },
+            body: JSON.stringify({ tier, startDate: new Date().toISOString() }),
+        }).then((res) => {
+            if (res.ok) {
+                popupAlert("Suscripción creada", "El usuario ahora es suscriptor.");
+            } else {
+                    popupAlert("Error al crear suscripción", res.statusText);
+            }
+        });
+    }
+
     const getDefaultConfig = async () => {
         return new Promise((resolve, reject) => {
             fetch(`/room/config`, {
@@ -407,8 +447,10 @@ export const ApiService = ({ children }) => {
                 setApiToken,
                 login,
 
+                fetchUsers,
                 fetchPlayers,
                 fetchRoomData,
+                createSubscription,
                 roomData,
 
                 fetchRoomStatus,

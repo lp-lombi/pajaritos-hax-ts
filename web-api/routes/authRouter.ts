@@ -50,6 +50,9 @@ authRouter.post("/login", async (req, res) => {
 
         const token = jwt.sign(userDto, secret, { expiresIn: `${expiration}h` });
 
+        usersService.updateUserById(user.id, {
+            lastLoginDate: new Date().toISOString(),
+        })
         res.send({ token, user: userDto } as LoginDto);
     } catch (error) {
         console.error("Error al iniciar sesión:", error);

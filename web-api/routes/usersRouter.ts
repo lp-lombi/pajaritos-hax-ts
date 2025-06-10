@@ -18,7 +18,8 @@ const subscriptionsService = new SubscriptionsService(database);
 usersRouter.get("/", async (req, res) => {
     try {
         const filterWithStats = req.query.stats === "true";
-        const users = await Utils.getAllUsersDto(filterWithStats);
+        const filterSubscribed = req.query.subscribed === "true";
+        const users = await Utils.getAllUsersDto(filterWithStats, filterSubscribed);
         res.send({ users });
     } catch (error) {
         console.error("Error al obtener todos los usuarios:", error);

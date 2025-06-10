@@ -2,8 +2,10 @@ export interface DbUser {
     id: number;
     username: string;
     password: string;
-    role: number;
     discordId: string | null;
+    role: number;
+    createDate: string;
+    lastLoginDate: string | null;
 }
 
 export interface DbSeason {

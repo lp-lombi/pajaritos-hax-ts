@@ -2,20 +2,28 @@ import { Database } from "sqlite3";
 import { DbUser } from "../types";
 import bcrypt from "bcrypt";
 
-
 export class UsersService {
     #database: Database;
     constructor(database: Database) {
         this.#database = database;
     }
 
-    async getAllUsers(filterWithStats = false): Promise<DbUser[]> {
+    async getAllUsers(filterWithStats = false, filterSubscribed = false): Promise<DbUser[]> {
+        const filters: string[] = [];
+        if (filterWithStats) {
+            filters.push(
+                "EXISTS (SELECT 1 FROM stats WHERE users.id = stats.userId AND stats.matches > 0)"
+            );
+        }
+        if (filterSubscribed) {
+            filters.push(
+                "EXISTS (SELECT 1 FROM subscriptions WHERE users.id = subscriptions.userId)"
+            );
+        }
+        const filtersSql = filters.length ? ` WHERE ${filters.join(" AND ")}` : "";
+
         return new Promise((resolve, reject) => {
-            const sql =
-                "SELECT * FROM users" +
-                (filterWithStats
-                    ? " WHERE EXISTS (SELECT 1 FROM stats WHERE users.id = stats.userId AND stats.matches > 0)"
-                    : "");
+            const sql = "SELECT * FROM users" + filtersSql;
             this.#database.all<DbUser>(sql, (err, rows) => {
                 if (err) {
                     return reject(err);
@@ -69,7 +77,15 @@ export class UsersService {
                         console.error(`Error al crear el usuario ${username}: ${err}`);
                         return reject(err);
                     }
-                    resolve({ id: this.lastID, username, password: hashedPassword, role, discordId });
+                    resolve({
+                        id: this.lastID,
+                        username,
+                        password: hashedPassword,
+                        role,
+                        discordId,
+                        createDate: new Date().toISOString(),
+                        lastLoginDate: null,
+                    });
                 }
             );
         });

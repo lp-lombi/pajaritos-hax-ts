@@ -1,8 +1,6 @@
 import { Database } from "sqlite3";
-
 import path from "path";
 import fs from "fs";
-
 import {
     HaxballEvent,
     MainReturnType,
@@ -19,9 +17,6 @@ export default function (API: MainReturnType, customData: CommandsPluginData, da
 
         data = customData;
         Utils = API.Utils;
-
-        // TODO: Mover a Chatbord
-        chatLog: string[] = [];
 
         #database = database;
         #commandsList: Command[] = [];
@@ -95,9 +90,9 @@ export default function (API: MainReturnType, customData: CommandsPluginData, da
                     "x-api-key": this.data.webApi.key,
                 },
                 body: JSON.stringify({
-                    byId,
-                    userId,
-                    name: playerName,
+                    byUserId: byId,
+                    toUserId: userId,
+                    toUserName: playerName,
                     ip,
                     auth,
                     isPermanent,

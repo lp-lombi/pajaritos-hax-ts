@@ -38,7 +38,7 @@ export default function (API: MainReturnType) {
 
       /** Comunicación emitida directamente por un jugador */
       chat(msg: string, byId: number, targetId: number | null = null) {
-          const player = this.phLib.getPlayer(byId);
+          const player = this.phLib.playersAndBot.find(p => p.id === byId)
           if (!player) return;
           var loggedEmoji = player.isLoggedIn ? "✔️ " : "      ";
           if (player.user.subscription) {
@@ -60,6 +60,7 @@ export default function (API: MainReturnType) {
           const str = `${loggedEmoji}[${ballEmoji}] ${player.name}: ${msg}`;
 
           this.room.sendAnnouncement(str, targetId, teamColor, 1, 1);
+          this.logChat(str, teamColor, "small-bold");
       }
 
       // TODO: la firma del estilo está mal definido en la API, se fuerza el tipo
@@ -107,7 +108,7 @@ export default function (API: MainReturnType) {
       }
 
       logChat(text: string, color: number, style: string) {
-          let maxLines = 50;
+          const maxLines = 50;
           this.chatLog.push({ text, color, style });
           maxLines > this.chatLog.length
               ? null

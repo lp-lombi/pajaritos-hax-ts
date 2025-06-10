@@ -13,6 +13,10 @@ import MatchHistory from "./plugins/matchHistory";
 import Gamemodes from "./plugins/gamemodes";
 import AdminFeatures from "./plugins/adminFeatures";
 import Votes from "./plugins/vote";
+import Kits from "./plugins/kits";
+import Orbs from "./plugins/orbs";
+import Announcements from "./plugins/announcements";
+import CustomDisc from "./plugins/customDisc";
 
 const haxball = NodeHaxball();
 
@@ -41,8 +45,15 @@ export default async function HaxballRoom(roomConfig: PajaritosRoomConfig) {
                     AdminFeatures(haxball),
                     SubsFeatures(haxball, commandsData.webApi),
                     MatchHistory(haxball, commandsData.webApi),
-                    Votes(haxball)
+                    Votes(haxball),
+                    Kits(haxball),
+                    Orbs(haxball),
+                    Announcements(haxball),
+                    CustomDisc(haxball),
                 ],
+                storage: {
+                    player_name: roomConfig.botName || "Pajarito",
+                } as any,
                 onOpen: (room) => {
                     room.onRoomLink = () => {
                         resolve(room);

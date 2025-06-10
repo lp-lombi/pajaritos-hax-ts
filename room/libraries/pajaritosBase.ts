@@ -36,6 +36,9 @@ export default function (API: MainReturnType) {
         get showAds() {
             return this.extraData.showAds;
         }
+        set showAds(show: boolean) {
+            this.extraData.showAds = show;
+        }
 
         set user(user: NonNullable<PHExtraPlayerData["user"]>) {
             this.extraData.user = user;
@@ -76,6 +79,15 @@ export default function (API: MainReturnType) {
                 return new PHPlayer(bot, extraData);
             }
             return null;
+        }
+
+        get playersAndBot() {
+            const players = this.players;
+            const bot = this.bot;
+            if (bot) {
+                players.push(bot);
+            }
+            return players;
         }
 
         onInit(callback: () => void) {

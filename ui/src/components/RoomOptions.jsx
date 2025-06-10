@@ -8,13 +8,23 @@ import Stadiums from "./RoomOptions/Stadiums";
 import Bans from "./RoomOptions/Bans";
 import Plugins from "./RoomOptions/Plugins";
 import { usePopup } from "../services/PopupService";
+import { Subscriptions } from "./RoomOptions/Subscriptions";
 
 export const RoomOptions = () => {
-    const { stopRoom, startGame, pauseGame, stopGame, roomData, gameData } =
-        useApi();
+    const { stopRoom, startGame, pauseGame, stopGame, roomData, gameData } = useApi();
     const { popupConfirm } = usePopup();
 
     const [option, setOption] = useState("stadiums");
+
+    const userData = JSON.parse(localStorage.getItem("userData"));
+
+    const Tab = ({ name, onClick }) => {
+        return (
+            <div className="tab" onClick={onClick}>
+                <span>{name}</span>
+            </div>
+        );
+    };
 
     return (
         <section className="room-options">
@@ -69,14 +79,11 @@ export const RoomOptions = () => {
                                                             {gameData.blueScore}
                                                         </span>
                                                     </div>
-                                                    {gameData.state ===
-                                                    "paused" ? (
+                                                    {gameData.state === "paused" ? (
                                                         <span
                                                             style={{
-                                                                fontSize:
-                                                                    "12px",
-                                                                position:
-                                                                    "absolute",
+                                                                fontSize: "12px",
+                                                                position: "absolute",
                                                                 top: "0px",
                                                             }}
                                                         >
@@ -85,9 +92,7 @@ export const RoomOptions = () => {
                                                     ) : null}
                                                 </>
                                             ) : (
-                                                <span
-                                                    style={{ fontSize: "14px" }}
-                                                >
+                                                <span style={{ fontSize: "14px" }}>
                                                     Juego detenido
                                                 </span>
                                             )
@@ -96,53 +101,37 @@ export const RoomOptions = () => {
                                     <div className="controls">
                                         {gameData ? (
                                             <>
-                                                {gameData.state !==
-                                                "stopped" ? (
+                                                {gameData.state !== "stopped" ? (
                                                     <>
-                                                        {gameData.state ===
-                                                        "paused" ? (
+                                                        {gameData.state === "paused" ? (
                                                             <button
-                                                                onClick={
-                                                                    pauseGame
-                                                                }
+                                                                onClick={pauseGame}
                                                                 className="play"
                                                             >
                                                                 <FontAwesomeIcon
-                                                                    icon={
-                                                                        faPlay
-                                                                    }
+                                                                    icon={faPlay}
                                                                 ></FontAwesomeIcon>
                                                             </button>
                                                         ) : (
                                                             <button
-                                                                onClick={
-                                                                    pauseGame
-                                                                }
+                                                                onClick={pauseGame}
                                                                 className="pause"
                                                             >
                                                                 <FontAwesomeIcon
-                                                                    icon={
-                                                                        faPause
-                                                                    }
+                                                                    icon={faPause}
                                                                 ></FontAwesomeIcon>
                                                             </button>
                                                         )}
                                                     </>
                                                 ) : (
-                                                    <button
-                                                        onClick={startGame}
-                                                        className="play"
-                                                    >
+                                                    <button onClick={startGame} className="play">
                                                         <FontAwesomeIcon
                                                             icon={faPlay}
                                                         ></FontAwesomeIcon>
                                                     </button>
                                                 )}
 
-                                                <button
-                                                    onClick={stopGame}
-                                                    className="stop"
-                                                >
+                                                <button onClick={stopGame} className="stop">
                                                     <FontAwesomeIcon
                                                         icon={faStop}
                                                     ></FontAwesomeIcon>
@@ -158,24 +147,12 @@ export const RoomOptions = () => {
                             </div>
 
                             <div className="tab-container">
-                                <div
-                                    className="tab"
-                                    onClick={() => setOption("stadiums")}
-                                >
-                                    <span>Estadios</span>
-                                </div>
-                                <div
-                                    className="tab"
-                                    onClick={() => setOption("bans")}
-                                >
-                                    <span>Baneos</span>
-                                </div>
-                                <div
-                                    className="tab"
-                                    onClick={() => setOption("plugins")}
-                                >
-                                    <span>Plugins</span>
-                                </div>
+                                <Tab name={"Estadios"} onClick={() => setOption("stadiums")} />
+                                <Tab name={"Baneos"} onClick={() => setOption("bans")} />
+                                <Tab name={"Plugins"} onClick={() => setOption("plugins")} />
+                                {userData && userData.role && userData.role >= 3 ? (
+                                    <Tab name={"Subs"} onClick={() => setOption("subs")} /> // TODO: esto no es seguro
+                                ) : null}
                             </div>
                             {option === "stadiums" ? (
                                 <Stadiums />
@@ -183,6 +160,8 @@ export const RoomOptions = () => {
                                 <Plugins />
                             ) : option === "bans" ? (
                                 <Bans />
+                            ) : option === "subs" ? (
+                                <Subscriptions />
                             ) : null}
                         </>
                     ) : null}

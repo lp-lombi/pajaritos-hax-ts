@@ -165,10 +165,18 @@ export default function Votes(API: MainReturnType) {
                                                         );
                                                     }, 3000);
                                                 }
+                                                this.currentElection = null;
                                             },
                                             (vote) => {
+                                                const voter = this.phLib.getPlayer(vote.playerId);
+                                                if (!voter) {
+                                                    console.error(
+                                                        `votes: no se encontró al votante con ID ${vote.playerId}.`
+                                                    );
+                                                    return;
+                                                }
                                                 this.commands.chat.announce(
-                                                    `${voteCaller.name} votó < ${vote.value} > a ${vote.election.description} | ${vote.election.affirmativeVotes.length}/${vote.election.requiredVotes} votos afirmativos`,
+                                                    `${voter.name} votó < ${vote.value} > a ${vote.election.description} | ${vote.election.affirmativeVotes.length}/${vote.election.requiredVotes} votos afirmativos`,
                                                     null,
                                                     "info",
                                                     2

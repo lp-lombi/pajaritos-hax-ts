@@ -16,6 +16,8 @@ export interface UserDto {
     username: string;
     role: number;
     discordId: string | null;
+    createDate: string;
+    lastLoginDate: string | null;
     stats: StatsDto | null;
     subscription: SubscriptionDto | null;
 }

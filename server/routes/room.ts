@@ -43,9 +43,9 @@ const sendStatusInterval = setInterval(() => {
 roomRouter.post("/start", async (req, res) => {
     if (!global.room) {
         const config = req.body as StartRoomRequestBody;
-        if (!config.roomName || !config.roomPassword || !config.maxPlayers || !config.botName) {
+        if (!config.roomName  || !config.maxPlayers || !config.botName) {
             res.status(400).send(
-                "Se requieren argumentos: roomName, roomPassword, maxPlayers, botName"
+                "Se requieren argumentos: roomName, maxPlayers, botName"
             );
             return;
         }
@@ -228,7 +228,7 @@ roomRouter.get("/chat", (req, res) => {
         const commands = getCommandsPlugin();
         if (commands) {
             // let chat = commands.chatLog.join("\n");
-            res.send(JSON.stringify({ chat: commands.chatLog }));
+            res.send(JSON.stringify({ chat: commands.chat.chatLog }));
         }
     } else {
         res.status(400).send("Sala no abierta");
