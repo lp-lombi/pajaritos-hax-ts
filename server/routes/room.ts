@@ -57,6 +57,12 @@ roomRouter.post("/start", async (req, res) => {
             token: config.token,
             noPlayer: false,
             showInRoomList: true,
+            // TODO: no forzar
+            geo: {
+                lat: -36,
+                lon: -59.9964,
+                flag: "ar",
+            },
         };
 
         try {
