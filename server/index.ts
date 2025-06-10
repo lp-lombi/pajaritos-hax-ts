@@ -57,7 +57,7 @@ async function init() {
         app.use(express.json());
         app.use(cors());
 
-        app.use(express.static("views/dist"));
+        app.use(express.static("views/app"));
         app.use("/login", login);
         app.use("/service", global.verifyToken, service);
         app.use("/room", global.verifyToken, roomRouter);
