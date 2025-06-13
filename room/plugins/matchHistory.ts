@@ -354,39 +354,36 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
                 (event) => event.forTeamId === 2
             ).length;
 
-            const bar = "▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
+            const bar = "▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬";
 
-            this.commands.chat.announce(
-                `${bar}\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Final del partido `,
-                null,
-                "announcement-big"
-            );
-            this.commands.chat.announce(
-                "▌".repeat(redPossessionPercent / 3) +
-                    ` - ${redPossessionPercent.toFixed(2)}% posesión Red`,
-                null,
-                "red-stats",
-                0
-            );
-            this.commands.chat.announce(
-                "▌".repeat(bluePossessionPercent / 3) +
-                    ` - ${bluePossessionPercent.toFixed(2)}% posesión Blue`,
-                null,
-                "blue-stats",
-                0
-            );
-            this.commands.chat.announce(
-                `El Red lleva ganados ${this.redWins} partidos y acumulados ${redAccumGoals} goles\n El Blue lleva ganados ${this.blueWins} partidos y acumulados ${blueAccumGoals} goles\n`,
-                null,
-                "info",
-                0
-            );
-            this.commands.chat.announce(
-                `${bar}`,
-                null,
-                "announcement-big",
-                0
-            );
+            setTimeout(() => {
+                this.commands.chat.announce(
+                    `${bar}\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Final del partido `,
+                    null,
+                    "announcement-big"
+                );
+                this.commands.chat.announce(
+                    "▌".repeat(redPossessionPercent / 3) +
+                        ` - ${redPossessionPercent.toFixed(2)}% posesión Red`,
+                    null,
+                    "red-stats",
+                    0
+                );
+                this.commands.chat.announce(
+                    "▌".repeat(bluePossessionPercent / 3) +
+                        ` - ${bluePossessionPercent.toFixed(2)}% posesión Blue`,
+                    null,
+                    "blue-stats",
+                    0
+                );
+                this.commands.chat.announce(
+                    `El Red lleva ganados ${this.redWins} partidos y acumulados ${redAccumGoals} goles\n El Blue lleva ganados ${this.blueWins} partidos y acumulados ${blueAccumGoals} goles\n`,
+                    null,
+                    "info",
+                    0
+                );
+                this.commands.chat.announce(`${bar}`, null, "announcement-big", 0);
+            }, 100);
         }
 
         fileMatchHistory = () => {
