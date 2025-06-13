@@ -111,11 +111,11 @@ export default function (API: MainReturnType) {
 
         getPlayer(name: string): PHPlayer | null;
         getPlayer(id: number): PHPlayer | null;
-        getPlayer(identifier: string | number): PHPlayer | null {
+        getPlayer(identifier: string | number, includeBot = false): PHPlayer | null {
             if (typeof identifier === "string") {
-                return this.players.find((p) => p.name === identifier) || null;
+                return this.playersAndBot.find((p) => p.name === identifier) || null;
             } else if (typeof identifier === "number") {
-                return this.players.find((p) => p.id === identifier) || null;
+                return this.playersAndBot.find((p) => p.id === identifier) || null;
             } else {
                 return null;
             }

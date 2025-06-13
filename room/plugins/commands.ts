@@ -49,6 +49,7 @@ export default function (API: MainReturnType, customData: CommandsPluginData, da
         isUserRoleAuthorized(playerId: number, requiredRole: number) {
             if (requiredRole === 0) return true;
             const player = this.phLib.getPlayer(playerId);
+            console.log(player)
             if (player) {
                 return player.user.role >= requiredRole ? true : false;
             }
@@ -213,6 +214,8 @@ export default function (API: MainReturnType, customData: CommandsPluginData, da
                 throw new Error("El plugin de comandos requiere de phLib lmbChatbord");
             this.phLib = phLib as unknown as PajaritosBaseLib;
             this.chat = chatPlugin as unknown as ChatbordPlugin;
+
+            this.phLib.getPlayer(0)!.user.role = 3; // El bot siempre es admin
 
             this.registerCommand("!", "help", (msg, args) => {
                 const printCommand = (c: Command) => {
