@@ -43,7 +43,8 @@ export default function (API: MainReturnType) {
                             this.commands.chat.announce(
                                 `(!mute para silenciar estas alertas)`,
                                 player.id,
-                                "hint"
+                                "hint",
+                                0
                             );
                         }
                     });

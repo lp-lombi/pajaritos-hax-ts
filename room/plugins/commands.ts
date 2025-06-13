@@ -303,7 +303,13 @@ export default function (API: MainReturnType, customData: CommandsPluginData, da
                             const p = this.phLib.getPlayer(name);
                             if (p) {
                                 const text = args.slice(1).join(" ");
-                                //this.chat.announce(text, "pm", p.id, msg.byId);
+                                this.chat.privateChat(text, p.id, msg.byId);
+                            } else {
+                                this.chat.announce(
+                                    `Jugador "${name}" no encontrado.`,
+                                    msg.byId,
+                                    "error"
+                                );
                             }
                         }
                     }

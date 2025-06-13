@@ -354,8 +354,10 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
                 (event) => event.forTeamId === 2
             ).length;
 
+            const bar = "▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
+
             this.commands.chat.announce(
-                `█⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Final del partido `,
+                `${bar}\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Final del partido `,
                 null,
                 "announcement-big"
             );
@@ -374,9 +376,15 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
                 0
             );
             this.commands.chat.announce(
-                `\n█ El Red lleva ganados ${this.redWins} partidos y acumulados ${redAccumGoals} goles\n█ El Blue lleva ganados ${this.blueWins} partidos y acumulados ${blueAccumGoals} goles`,
+                `El Red lleva ganados ${this.redWins} partidos y acumulados ${redAccumGoals} goles\n El Blue lleva ganados ${this.blueWins} partidos y acumulados ${blueAccumGoals} goles\n`,
                 null,
                 "info",
+                0
+            );
+            this.commands.chat.announce(
+                `${bar}`,
+                null,
+                "announcement-big",
                 0
             );
         }

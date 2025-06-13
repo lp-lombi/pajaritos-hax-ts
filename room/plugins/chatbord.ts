@@ -38,7 +38,7 @@ export default function (API: MainReturnType) {
 
       /** Comunicación emitida directamente por un jugador */
       chat(msg: string, byId: number, targetId: number | null = null) {
-          const player = this.phLib.playersAndBot.find(p => p.id === byId)
+          const player = this.phLib.playersAndBot.find((p) => p.id === byId);
           if (!player) return;
           var loggedEmoji = player.isLoggedIn ? "✔️ " : "      ";
           if (player.user.subscription) {
@@ -61,6 +61,35 @@ export default function (API: MainReturnType) {
 
           this.room.sendAnnouncement(str, targetId, teamColor, 1, 1);
           this.logChat(str, teamColor, "small-bold");
+      }
+
+      privateChat(msg: string, targetId: number, byId: number) {
+          const targetPlayer = this.phLib.getPlayer(targetId);
+          const byPlayer = this.phLib.getPlayer(byId);
+          if (!targetPlayer || !byPlayer) return;
+          const loggedEmoji = byPlayer.isLoggedIn ? "✔️ " : "      ";
+          this.room.sendAnnouncement(
+              `${loggedEmoji} ${byPlayer.name} [Mensaje privado]: ${msg}`,
+              targetId,
+              this.colors.lightOrange,
+              "bold" as unknown as any,
+              1
+          );
+          this.room.sendAnnouncement(
+              `${loggedEmoji} ${byPlayer.name} [Mensaje privado a ${targetPlayer.name}]: ${msg}`,
+              byId,
+              this.colors.lightOrange,
+              "bold" as unknown as any,
+              1
+          );
+
+          if (targetId === 0 || byId === 0) {
+              this.logChat(
+                  `${loggedEmoji} ${byPlayer.name} [Mensaje privado a ${targetPlayer.name}]: ${msg}`,
+                  this.colors.lightOrange,
+                  "bold"
+              );
+          }
       }
 
       // TODO: la firma del estilo está mal definido en la API, se fuerza el tipo
