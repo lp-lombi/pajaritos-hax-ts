@@ -18,7 +18,9 @@ export class PlayerStats {
         public goals: number,
         public assists: number,
         public rating: number | null = null,
-        public winRate: number | null = null
+        public winRate: number | null = null,
+        public matches: number | null = null,
+        public wins: number | null = null,
     ) {}
 }
 
@@ -322,18 +324,20 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
 
         printPlayerStats(playerStats: PlayerStats, targetId: any) {
             this.commands.chat.announce(
-                "█ " +
+                "\n█ " +
                     (playerStats.rating ? `${playerStats.rating} - ` : "") +
                     `${playerStats.name}`,
                 targetId,
                 "announcement-big",
                 0
             );
-            this.commands.chat.announce(
-                `█ Goles: ${playerStats.goals}    |    Asistencias: ${playerStats.assists}\n` +
-                    (playerStats.winRate
-                        ? `█ Win Rate: ${(playerStats.winRate * 100).toFixed(2)}%\n\n`
-                        : "\n"),
+
+            let str = `█ Goles: ${playerStats.goals}    |    Asistencias: ${playerStats.assists}\n`;
+            if (playerStats.matches && playerStats.wins && playerStats.winRate) {
+                str += `█ Partidos: ${playerStats.matches}    |    Victorias: ${playerStats.wins}    |    Win Rate: ${(playerStats.winRate * 100).toFixed(2)}%\n`;
+            }
+
+            this.commands.chat.announce(str,
                 targetId,
                 "info",
                 0
@@ -467,7 +471,9 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
                                                     u.stats!.score,
                                                     u.stats!.assists,
                                                     u.stats!.rating,
-                                                    u.stats!.wins / u.stats!.matches
+                                                    u.stats!.wins / u.stats!.matches,
+                                                    u.stats!.matches,
+                                                    u.stats!.wins
                                                 )
                                         );
                                     const totalPages = Math.ceil(stats.length / pageSize);
@@ -523,7 +529,9 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
                                 data.stats.score,
                                 data.stats.assists,
                                 data.stats.rating,
-                                data.stats.wins / data.stats.matches
+                                data.stats.wins / data.stats.matches,
+                                data.stats.matches,
+                                data.stats.wins
                             );
                             that.printPlayerStats(stats, msg.byId);
                             that.commands.chat.announce(

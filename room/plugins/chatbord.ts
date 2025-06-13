@@ -105,6 +105,9 @@ export default function (API: MainReturnType) {
                   break;
           }
           this.room.sendAnnouncement(msg, targetId, ...style, sound);
+          if (targetId === 0 || targetId === null) {
+              this.logChat(msg, style[0], style[1] as unknown as string);
+          }
       }
 
       logChat(text: string, color: number, style: string) {
