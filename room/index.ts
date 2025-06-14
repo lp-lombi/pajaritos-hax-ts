@@ -35,7 +35,6 @@ export default async function HaxballRoom(roomConfig: PajaritosRoomConfig) {
                 discord: "https://discord.gg/Y5ZWvjftP6",
                 webApi: roomConfig.webApi,
             };
-            console.log(roomConfig.createParams)
             haxball.Room.create(roomConfig.createParams as CreateRoomParams, {
                 libraries: [PajaritosBase(haxball) as unknown as Library],
                 plugins: [
