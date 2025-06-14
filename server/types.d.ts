@@ -1,5 +1,5 @@
 import type { WebApiData } from "room/types";
-import type { Room } from "shared/types/node-haxball";
+import type { GeoLocation, Room } from "shared/types/node-haxball";
 import type { RequestHandler, Request, Response, NextFunction } from "express";
 import type { CreateRoomParamsOptionalGeo } from "shared/types/room";
 
@@ -29,6 +29,7 @@ export interface PajaritosRoomConfigFile {
 
 declare global {
     var webApi: WebApiData;
+    var geo: GeoLocation | undefined;
     var jwtSecret: string;
     var room: Room | null;
     var stadiumsPath: string;

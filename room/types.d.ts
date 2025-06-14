@@ -5,6 +5,10 @@ import MatchHistoryPlugin from "./plugins/matchHistory";
 import GamemodesPlugin from "./plugins/gamemodes";
 import { CreateRoomParams, GeoLocation, HaxballEvent } from "shared/types/node-haxball";
 
+declare global {
+    var roomVersion: string;
+}
+
 export type CreateRoomParamsOptionalGeo = Omit<CreateRoomParams, "geo"> & { geo?: GeoLocation };
 
 export interface PajaritosRoomConfig {

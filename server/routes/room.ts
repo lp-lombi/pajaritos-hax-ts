@@ -1,12 +1,14 @@
 import { Router } from "express";
 import { readdirSync } from "fs";
-import { CommandsPlugin, CreateRoomParamsOptionalGeo } from "room/types";
+import { CreateRoomParamsOptionalGeo } from "room/types";
 import HaxballRoom from "room";
-import { PajaritosRoomConfig } from "room/types";
 import { Config, getCommandsPlugin } from "../utils";
-import path, { parse } from "path";
+import path from "path";
 import { PajaritosRoomConfigFile } from "../types";
 import { Plugin } from "@shared/types/node-haxball";
+import NodeHaxballAPI from "room/node_modules/node-haxball"
+
+const NodeHaxballUtils = NodeHaxballAPI().Utils;
 
 const roomRouter = Router();
 
@@ -57,12 +59,7 @@ roomRouter.post("/start", async (req, res) => {
             token: config.token,
             noPlayer: false,
             showInRoomList: true,
-            // TODO: no forzar
-            geo: {
-                lat: -36,
-                lon: -59.9964,
-                flag: "ar",
-            },
+            geo: global.geo || await NodeHaxballUtils.getGeo(),
         };
 
         try {

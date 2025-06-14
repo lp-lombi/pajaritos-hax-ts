@@ -68,6 +68,7 @@ async function getApiKey(url: string, user: { username: string; password: string
 function parseGlobal(roomConfig: PajaritosRoomConfig, jwtSecret: string) {
     global.webApi = roomConfig.webApi;
     global.jwtSecret = jwtSecret;
+    global.geo = roomConfig.createParams.geo;
     global.room = null;
 }
 

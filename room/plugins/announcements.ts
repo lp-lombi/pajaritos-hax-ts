@@ -88,9 +88,10 @@ export default function (API: MainReturnType) {
             if (!this.commands) {
                 throw new Error("El plugin de anuncios requiere del plugin de comandos.");
             } else {
+                const currentVersion = process.env.npm_package_version
                 this.saludo = `\n╔═══════════════════════════════════════════════════════╗
 ║   PAJARITOS HAX   ║ !discord !vip !stats !login !help !pm !bb  ║
-╚═══════════════════════════════════════════════════════╝\n\n𝗕𝗜𝗘𝗡𝗩𝗘𝗡𝗜𝗗𝗢 𝗔 𝗟𝗔 𝗖𝗢𝗠𝗨𝗡𝗜𝗗𝗔𝗗 𝗗𝗘 𝗟𝗔 𝗖𝗢𝗠𝗕𝗔\n\n\n${this.commands.data.discord}`;
+╚═══════════════════════════════════════════════════════╝\n${global.roomVersion ? "Versión " + global.roomVersion : ""}\n\n𝗕𝗜𝗘𝗡𝗩𝗘𝗡𝗜𝗗𝗢 𝗔 𝗟𝗔 𝗖𝗢𝗠𝗨𝗡𝗜𝗗𝗔𝗗 𝗗𝗘 𝗟𝗔 𝗖𝗢𝗠𝗕𝗔\n\n${this.commands.data.discord}`;
                 this.fetchAnnouncements();
                 this.announcementLoop();
                 this.commands.registerCommand(

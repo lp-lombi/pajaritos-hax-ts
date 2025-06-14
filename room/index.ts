@@ -17,8 +17,10 @@ import Kits from "./plugins/kits";
 import Orbs from "./plugins/orbs";
 import Announcements from "./plugins/announcements";
 import CustomDisc from "./plugins/customDisc";
+import { version } from "./package.json";
 
 const haxball = NodeHaxball();
+global.roomVersion = version;
 
 /**
  * Crea una sala de Haxball y devuelve la referencia a ella cuando se obtiene el link
