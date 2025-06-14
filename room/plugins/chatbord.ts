@@ -94,8 +94,8 @@ export default function (API: MainReturnType) {
                     return;
                 }
                 this.room.sendAnnouncement(str, p.id, teamColor, 1, 1);
-                this.logChat(str, teamColor, "small-bold");
             });
+            this.logChat(str, teamColor, "small-bold");
         }
 
         privateChat(msg: string, targetId: number, byId: number) {
