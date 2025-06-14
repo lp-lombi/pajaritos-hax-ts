@@ -17,6 +17,9 @@ export default function (API: MainReturnType) {
         get disc() {
             return this.player.disc;
         }
+        get auth() {
+            return this.player.auth;
+        }
         get isAdmin() {
             return this.player.isAdmin;
         }
@@ -39,7 +42,12 @@ export default function (API: MainReturnType) {
         set showAds(show: boolean) {
             this.extraData.showAds = show;
         }
-
+        get mutedPlayersIds() {
+            return this.extraData.mutedPlayersIds;
+        }
+        set mutedPlayersIds(ids: number[]) {
+            this.extraData.mutedPlayersIds = ids;
+        }
         set user(user: NonNullable<PHExtraPlayerData["user"]>) {
             this.extraData.user = user;
         }
@@ -103,6 +111,7 @@ export default function (API: MainReturnType) {
                     user: undefined,
                     comba: { holdTicks: 0 },
                     showAds: true,
+                    mutedPlayersIds: [],
                 };
                 this.playersExtraData.set(player.id, newData);
                 return newData;

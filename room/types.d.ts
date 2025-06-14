@@ -70,6 +70,7 @@ export type PHUser = {
 };
 export type PHExtraPlayerData = {
   showAds: boolean;
+  mutedPlayersIds: number[];
   comba: {
     holdTicks: number;
   };

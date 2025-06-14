@@ -54,7 +54,7 @@ export default async function HaxballRoom(roomConfig: PajaritosRoomConfig) {
                     CustomDisc(haxball),
                 ],
                 storage: {
-                    player_name: roomConfig.botName || "Pajarito",
+                    player_name: roomConfig.botName || "Cristo",
                 } as any,
                 onOpen: (room) => {
                     room.onRoomLink = () => {

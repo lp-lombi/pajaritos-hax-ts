@@ -49,7 +49,6 @@ export default function (API: MainReturnType, customData: CommandsPluginData, da
         isUserRoleAuthorized(playerId: number, requiredRole: number) {
             if (requiredRole === 0) return true;
             const player = this.phLib.getPlayer(playerId);
-            console.log(player)
             if (player) {
                 return player.user.role >= requiredRole ? true : false;
             }

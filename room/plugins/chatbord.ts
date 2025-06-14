@@ -1,9 +1,17 @@
 import type { MainReturnType } from "shared/types/node-haxball";
-import { AnnouncementStyle, PajaritosBaseLib, PHPlayer } from "../types";
+import { AnnouncementStyle, CommandsPlugin, PajaritosBaseLib, PHPlayer } from "../types";
+
+interface MutedPlayer {
+    id: number;
+    auth: string | null;
+    name: string;
+    minutes: number;
+}
 
 export default function (API: MainReturnType) {
     class ChatbordPlugin extends API.Plugin {
         phLib!: PajaritosBaseLib;
+        commands!: CommandsPlugin;
         constructor(
             private readonly colors = {
                 white: parseInt("D9D9D9", 16),
@@ -24,7 +32,7 @@ export default function (API: MainReturnType) {
                 blueStats: parseInt("9999FF", 16),
             },
             public chatLog: { text: string; color: number; style: string }[] = [],
-            public mutedPlayersIds: number[] = []
+            public mutedPlayers: MutedPlayer[] = []
         ) {
             super("lmbChatbord", true, {
                 version: "1.0-ts",
@@ -34,10 +42,29 @@ export default function (API: MainReturnType) {
             });
         }
 
+        /**
+         * Determina si un jugador está silenciado, primero por el ID en la sala y luego por el string de auth.
+         */
+        isPlayerMuted(player: PHPlayer) {
+            let isMuted = this.mutedPlayers.some((p) => p.id === player.id);
+            if (!isMuted && player.auth) {
+                // Si no se encontró por ID, se busca por auth
+                isMuted = this.mutedPlayers.some((p) => p.auth === player.auth);
+            }
+            return isMuted;
+        }
+
         /** Comunicación emitida directamente por un jugador */
-        chat(msg: string, byId: number, targetId: number | null = null) {
+        chat(msg: string, byId: number) {
             const player = this.phLib.playersAndBot.find((p) => p.id === byId);
             if (!player) return;
+            if (this.isPlayerMuted(player)) {
+                return this.announce(
+                    "No podés enviar mensajes porque estás silenciado.",
+                    player.id,
+                    "error"
+                );
+            }
             var loggedEmoji = player.isLoggedIn ? "✔️ " : "      ";
             if (player.user.subscription) {
                 const emoji = player.user.subscription.emoji;
@@ -53,16 +80,22 @@ export default function (API: MainReturnType) {
             if (player.team.id === 1) {
                 teamColor = player.user.subscription ? this.colors.redTeamVip : this.colors.redTeam;
             } else if (player.team.id === 2) {
-                teamColor = player.user.subscription ? this.colors.blueTeamVip : this.colors.blueTeam;
-            }
-            else {
+                teamColor = player.user.subscription
+                    ? this.colors.blueTeamVip
+                    : this.colors.blueTeam;
+            } else {
                 teamColor = player.user.subscription ? this.colors.vip : this.colors.white;
             }
 
             const str = `${loggedEmoji}[${ballEmoji}] ${player.name}: ${msg}`;
 
-            this.room.sendAnnouncement(str, targetId, teamColor, 1, 1);
-            this.logChat(str, teamColor, "small-bold");
+            this.phLib.playersAndBot.forEach((p) => {
+                if (p.mutedPlayersIds.includes(byId)) {
+                    return;
+                }
+                this.room.sendAnnouncement(str, p.id, teamColor, 1, 1);
+                this.logChat(str, teamColor, "small-bold");
+            });
         }
 
         privateChat(msg: string, targetId: number, byId: number) {
@@ -160,7 +193,95 @@ export default function (API: MainReturnType) {
             this.phLib = this.room.libraries.find(
                 (l) => (l as any).name === "PajaritosBase"
             ) as unknown as PajaritosBaseLib;
-            if (!this.phLib) throw new Error("chat: No se encontró el plugin lmbPajaritosBase");
+            this.commands = this.room.plugins.find(
+                (p) => (p as any).name === "lmbCommands"
+            ) as CommandsPlugin;
+            if (!this.phLib || !this.commands)
+                throw new Error("chat: No se encontró PajaritosBase o Commands plugin");
+            this.commands.registerCommand(
+                "!",
+                "mute",
+                (msg, args) => {
+                    if (args.length < 1) {
+                        this.announce(this.getPlayersIdsString(this.phLib.players), msg.byId);
+                        return this.announce("Uso: !mute <ID>. Para desmutearlo, repetí el mismo comando.", msg.byId, "info", 0);
+                    }
+                    const target = this.phLib.getPlayer(parseInt(args[0]));
+                    const player = this.phLib.getPlayer(msg.byId);
+                    if (!target) {
+                        return this.announce("Jugador no encontrado", msg.byId, "error");
+                    }
+                    if (target.id === 0) {
+                        return this.announce("No podés silenciar al bot", msg.byId, "error");
+                    }
+                    if (target.id === msg.byId) {
+                        return this.announce("No podés silenciarte a vos mismo", msg.byId, "error");
+                    }
+                    if (player) {
+                        if (player.mutedPlayersIds.includes(target.id)) {
+                            player.mutedPlayersIds = player.mutedPlayersIds.filter((id) => id !== target.id);
+                            return this.announce(`Jugador ${target.name} (${target.id}) desmutado`, msg.byId, "info");
+                        }
+                        player.mutedPlayersIds.push(target.id);
+                        this.announce(`Jugador ${target.name} (${target.id}) muteado`, msg.byId, "info")
+                    }
+
+                },
+                "Dejar de recibir los mensajes de un jugador (el otro jugador no se entera)",
+            );
+            this.commands.registerCommand(
+                "!",
+                "muteall",
+                (msg, args) => {
+                    if (args.length < 1) {
+                        this.announce(this.getPlayersIdsString(this.phLib.players), msg.byId);
+                        return this.announce("Uso: !muteall <ID> <Minutos (1 a 10, por defecto 3)>", msg.byId, "info", 0);
+                    }
+                    const target = this.phLib.getPlayer(parseInt(args[0]));
+                    if (!target) {
+                        return this.announce("Jugador no encontrado", msg.byId, "error");
+                    }
+                    if (target.id === 0) {
+                        return this.announce("No podés silenciar al bot", msg.byId, "error");
+                    }
+                    let minutes = 3; // Valor por defecto
+                    if (args[1]) {
+                        minutes = parseInt(args[1]);
+                    }
+                    if (isNaN(minutes) || minutes < 1 || minutes > 10) {
+                        return this.announce(
+                            "Solo se permite silenciar de 1 a 10 minutos.",
+                            msg.byId,
+                            "error"
+                        );
+                    }
+                    this.mutedPlayers.push({
+                        id: target.id,
+                        auth: target.auth,
+                        name: target.name,
+                        minutes,
+                    });
+                    setTimeout(() => {
+                        this.mutedPlayers = this.mutedPlayers.filter((p) => p.id !== target.id);
+                        const mutedPlayer = this.phLib.getPlayer(target.id);
+                        if (mutedPlayer) {
+                            this.announce(
+                                "Ya no estás silenciado",
+                                mutedPlayer.id,
+                            )
+                        }
+                    }, minutes * 60 * 1000);
+                    this.announce(
+                        `Jugador ${target.name} (${target.id}) silenciado por ${minutes} minutos`,
+                        msg.byId,
+                        "info"
+                    );
+                    this.announce(`Fuiste silenciado por ${minutes} minutos por un administrador`, target.id, "warn", 2);
+                },
+                "Silencia a un jugador para todos",
+                false,
+                1
+            );
         };
     }
 

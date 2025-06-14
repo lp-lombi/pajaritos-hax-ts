@@ -41,7 +41,7 @@ export default function (API: MainReturnType) {
                         if (player.showAds) {
                             this.commands.chat.announce(`🕊️ ${an.text}`, player.id, "announcement");
                             this.commands.chat.announce(
-                                `(!mute para silenciar estas alertas)`,
+                                `(!anmute para silenciar estas alertas)`,
                                 player.id,
                                 "hint",
                                 0
@@ -95,7 +95,7 @@ export default function (API: MainReturnType) {
                 this.announcementLoop();
                 this.commands.registerCommand(
                     "!",
-                    "mute",
+                    "anmute",
                     (msg, args) => {
                         const player = this.commands.phLib.getPlayer(msg.byId);
                         if (player) {
