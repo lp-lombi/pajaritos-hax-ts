@@ -6,6 +6,7 @@ interface EnvVars {
     API_KEY: string;
     JWT_SECRET: string;
     JWT_EXPIRATION_HOURS: string;
+    ROOT_USERNAME: string;
     ROOT_PASSWORD: string;
 }
 
@@ -14,6 +15,7 @@ export class EnvFile {
         API_KEY: ApiKey.generateOne(),
         JWT_SECRET: "clave_secreta",
         JWT_EXPIRATION_HOURS: "1",
+        ROOT_USERNAME: "root",
         ROOT_PASSWORD: "root",
     };
     private constructor() {}
@@ -43,8 +45,8 @@ export class EnvFile {
             if (varName === "API_KEY") {
                 comment += "# Esta variable se genera automáticamente. No modificar manualmente.\n";
             }
-            if (varName === "ROOT_PASSWORD") {
-                comment += "# Contraseña del usuario root por defecto.\n";
+            if (varName === "ROOT_USERNAME") {
+                comment += "# Usuario y contraseñas por defecto.\n";
             }
             str += `${comment}${varName}=${this.defaultEnvVars[varName as keyof EnvVars]}\n`;
         }

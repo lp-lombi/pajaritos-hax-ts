@@ -2,7 +2,9 @@ import express from "express";
 import { UsersService } from "../service/UsersService";
 import { StatsService } from "../service/StatsService";
 import { SubscriptionsService } from "../service/SubscriptionsService";
-import { DbUser, DbUserStats, DbUserSubscription } from "../types";
+import { User } from "../entities/User";
+import { Stats } from "../entities/Stats";
+import { SubscriptionDto } from "@shared/types/dtos/misc.dto";
 
 export const usersRouter = express.Router();
 
@@ -46,8 +48,8 @@ usersRouter.patch("/:id", async (req, res) => {
     if (isNaN(userId)) {
         res.status(400).send({ error: "ID de usuario inválido" });
     }
-    const allowedFields: (keyof DbUser)[] = ["username", "password", "role", "discordId"];
-    const updateObj: Partial<DbUser> = {};
+    const allowedFields: (keyof User)[] = ["username", "password", "role", "discordId"];
+    const updateObj: Partial<User> = {};
     for (const field of allowedFields) {
         if (req.body[field] !== undefined) {
             updateObj[field] = field === "role" ? parseInt(req.body[field]) : req.body[field];
@@ -85,7 +87,7 @@ usersRouter.post("/:id/stats/sum", async (req, res) => {
         res.status(400).send({ error: "Faltan las estadísticas a sumar" });
         return;
     }
-    const updateObj: Partial<DbUserStats> = {};
+    const updateObj: Partial<Stats> = {};
     if (score) updateObj.score = score;
     if (assists) updateObj.assists = assists;
     if (matches) updateObj.matches = matches;
@@ -138,50 +140,26 @@ usersRouter.post("/:id/subscription", async (req, res) => {
 });
 
 usersRouter.patch("/:id/subscription", async (req, res) => {
-    const userId = parseInt(req.params.id, 10);
-    if (isNaN(userId)) {
-        res.status(400).send({ error: "ID de usuario inválido" });
-        return;
-    }
-
-    const allowedFields: (keyof DbUserSubscription)[] = [
+    const userId = parseInt(req.params.id);
+    const updateObj: Partial<SubscriptionDto> = {};
+    const allowedFields: (keyof SubscriptionDto)[] = [
         "tier",
-        "startDate",
+        "scoreAnimId",
         "scoreMessage",
         "assistMessage",
         "joinMessage",
         "emoji",
-        "scoreAnimId",
     ];
-
-    const updateObj: Partial<DbUserSubscription> = {};
-
     for (const field of allowedFields) {
-        if (req.body[field] !== undefined) {
-            updateObj[field] =
-                field === "scoreAnimId" || field === "tier"
-                    ? parseInt(req.body[field])
-                    : req.body[field];
+        if (field in req.body) {
+            updateObj[field] = req.body[field];
         }
     }
-
-    if (Object.keys(updateObj).length === 0) {
-        res.status(400).send({ error: "No se proporcionaron datos para actualizar" });
-        return;
-    }
-
     try {
-        const updatedSubscription = await subscriptionsService.updateSubscription(
-            userId,
-            updateObj
-        );
-        if (!updatedSubscription) {
-            res.status(404).send({ error: "Suscripción no encontrada" });
-            return;
-        }
-        res.send({ subscription: updatedSubscription });
+        await subscriptionsService.updateSubscription(userId, updateObj);
+        res.send({ success: true, user: await usersService.getUserById(userId) });
     } catch (error) {
-        console.error("Error al actualizar la suscripción del usuario:", error);
-        res.status(500).send({ error: "Error al actualizar la suscripción del usuario" });
+        console.error("Error al actualizar la suscripción:", error);
+        res.status(500).send({ error: "Error al actualizar la suscripción" });
     }
 });

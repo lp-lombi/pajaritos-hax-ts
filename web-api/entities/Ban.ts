@@ -20,9 +20,9 @@ export class Ban {
     @Column({ type: "text" })
     toUserName: string; // Se registra el nombre ya que puede no haberse logueado
 
-    @ManyToOne(() => User)
+    @ManyToOne(() => User, { nullable: true })
     @JoinColumn({ name: "byUserId" })
-    byUser: User;
+    byUser: User | null;
 
     @Column({ type: "text", nullable: true })
     reason: string | null;

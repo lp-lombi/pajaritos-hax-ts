@@ -33,6 +33,8 @@ export class UsersService {
         const query = this.usersRepository.createQueryBuilder("user")
             .leftJoinAndSelect("user.stats", "stats")
             .leftJoinAndSelect("user.subscription", "subscription")
+            .leftJoinAndSelect("subscription.properties", "property")
+            .leftJoinAndSelect("property.type", "type")
             .leftJoinAndSelect("stats.season", "season");
         if (filter.withMatches) {
             query.andWhere("stats.matches > :matches", { matches: 0 });
@@ -121,7 +123,7 @@ export class UsersService {
     }
 
     async updateUserById(id: number, newData: DeepPartial<User>): Promise<GetUserDto | null> {
-        const user = await this.usersRepository.findOne({ where: { id } });
+        const user = await this.userQuery().where("user.id = :id", { id }).getOne();
         if (!user) return null;
         Object.assign(user, newData);
         const updatedUser = await this.usersRepository.save(user);

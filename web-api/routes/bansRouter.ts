@@ -1,29 +1,28 @@
 import express from "express";
 import { BansService } from "../service/BansService";
-import { DbBan } from "../types";
+import { Ban } from "../entities/Ban";
 
-const bansService = new BansService(database);
+const bansService = BansService.getInstance();
 
 export const bansRouter = express.Router();
 
 bansRouter.get("/", async (req, res) => {
     try {
-        const isPermanent = req.query.isPermanent === "true";
-        bansService.getAllBans().then(async (bans) => {
-            const bannedUsers = await Promise.all(
-                bans.map(async (ban) => {
-                    const bannedUser = ban.toUserId
-                        ? await Utils.getUserDtoByUserId(ban.toUserId)
-                        : null;
-                    const bannedByUser = ban.byUserId
-                        ? await Utils.getUserDtoByUserId(ban.byUserId)
-                        : null;
-                    return Utils.createBanDto(ban, bannedUser, bannedByUser);
-                })
-            )
-            const filteredBans = bannedUsers.filter(ban => ban.isPermanent === isPermanent);
-            res.json({ bans: filteredBans });
-        });
+        const isPermanent =
+            req.query.isPermanent === "true"
+                ? true
+                : req.query.isPermanent === "false"
+                ? false
+                : undefined;
+        const isActive =
+            req.query.isActive === "true"
+                ? true
+                : req.query.isActive === "false"
+                ? false
+                : undefined;
+        const toUserId = req.query.toUserId ? parseInt(req.query.toUserId as string) : undefined;
+        const byUserId = req.query.byUserId ? parseInt(req.query.byUserId as string) : undefined;
+        bansService.getAllBans({ isPermanent, isActive, toUserId, byUserId });
     } catch (error) {
         console.error("Error al obtener los bans:", error);
         res.status(500).json({ error: "Error al obtener los bans" });
@@ -53,7 +52,7 @@ bansRouter.post("/", async (req, res) => {
             auth,
             isPermanent ? 1 : 0
         );
-        res.json({ ban: Utils.createBanDto(ban) });
+        res.json({ ban });
     } catch (error) {
         console.error("Error al crear el ban:", error);
         res.status(500).json({ error: "Error al crear el ban" });
@@ -62,38 +61,25 @@ bansRouter.post("/", async (req, res) => {
 
 bansRouter.put("/:id", async (req, res) => {
     const { id } = req.params;
-    const allowedFields: (keyof DbBan)[] = [
-        "toUserId",
-        "toUserName",
-        "byUserId",
-        "reason",
-        "startDate",
-        "days",
-        "ip",
-        "auth",
-        "isPermanent",
-        "isActive",
-    ];
-    const newData: Partial<DbBan> = {};
-
-    allowedFields.forEach((field) => {
-        if (req.body[field] !== undefined) {
-            newData[field] =
-                field === "isPermanent" || field === "isActive"
-                    ? req.body[field]
-                        ? 1
-                        : 0
-                    : req.body[field];
-        }
-    });
-
+    const newData: Partial<Ban> = {
+        isPermanent: req.body.isPermanent,
+        isActive: req.body.isActive,
+        reason: req.body.reason,
+        days: req.body.days,
+        ip: req.body.ip,
+        auth: req.body.auth,
+    };
+    if (!newData.isPermanent && !newData.isActive && !newData.reason && !newData.days && !newData.ip && !newData.auth) {
+        res.status(400).json({ error: "No se proporcionaron datos para actualizar" });
+        return;
+    }
     try {
-        const ban = await bansService.updateBan(parseInt(id), newData);
-        if (!ban) {
+        const updatedBan = await bansService.updateBan(parseInt(id), newData);
+        if (updatedBan) {
+            res.json({ ban: updatedBan });
+        } else {
             res.status(404).json({ error: "Ban no encontrado" });
-            return;
         }
-        res.json({ ban: Utils.createBanDto(ban) });
     } catch (error) {
         console.error("Error al actualizar el ban:", error);
         res.status(500).json({ error: "Error al actualizar el ban" });

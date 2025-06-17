@@ -1,49 +1,50 @@
-import { Database } from "sqlite3";
-import { DbBan } from "../types";
+import { AppDataSource } from "../db/data-source";
+import { Ban } from "../entities/Ban";
+import { GetBanDto } from "@shared/types/dtos/ban.dto";
+import { createBanDto } from "../utils/dto-mappers";
+import { DeepPartial } from "typeorm";
 
+export interface BanFilters {
+    isPermanent?: boolean;
+    isActive?: boolean;
+    toUserId?: number;
+    byUserId?: number;
+}
 
 export class BansService {
-    constructor(private database: Database) {}
-
-    async getAllBans(): Promise<DbBan[]> {
-        return new Promise((resolve, reject) => {
-            this.database.all<DbBan>("SELECT * FROM bans", (err, rows) => {
-                if (err) {
-                    return reject(err);
-                }
-                resolve(rows);
-            });
-        });
+    private static instance: BansService;
+    private constructor(
+        private bansRepository = AppDataSource.getRepository(Ban),
+    ) {}
+    static getInstance(): BansService {
+        if (!this.instance) {
+            this.instance = new BansService();
+        }
+        return this.instance;
     }
 
-    async getBansByBannedUserId(userId: number): Promise<DbBan[]> {
-        return new Promise((resolve, reject) => {
-            this.database.all<DbBan>(
-                "SELECT * FROM bans WHERE toUserId = ?",
-                [userId],
-                (err, rows) => {
-                    if (err) {
-                        return reject(err);
-                    }
-                    resolve(rows);
-                }
-            );
-        });
+    banQuery(filter: BanFilters = {}) {
+        const query = this.bansRepository.createQueryBuilder("ban")
+            .leftJoinAndSelect("ban.toUser", "toUser")
+            .leftJoinAndSelect("ban.byUser", "byUser");
+        if (filter.isPermanent !== undefined) {
+            query.andWhere("ban.isPermanent = :isPermanent", { isPermanent: filter.isPermanent ? 1 : 0 });
+        }
+        if (filter.isActive !== undefined) {
+            query.andWhere("ban.isActive = :isActive", { isActive: filter.isActive ? 1 : 0 });
+        }
+        if (filter.toUserId !== undefined) {
+            query.andWhere("ban.toUserId = :toUserId", { toUserId: filter.toUserId });
+        }
+        if (filter.byUserId !== undefined) {
+            query.andWhere("ban.byUserId = :byUserId", { byUserId: filter.byUserId });
+        }
+        return query;            
     }
 
-    async getBansByAdminUserId(userId: number): Promise<DbBan[]> {
-        return new Promise((resolve, reject) => {
-            this.database.all<DbBan>(
-                "SELECT * FROM bans WHERE byUserId = ?",
-                [userId],
-                (err, rows) => {
-                    if (err) {
-                        return reject(err);
-                    }
-                    resolve(rows);
-                }
-            );
-        });
+    async getAllBans(filter: BanFilters = {}): Promise<GetBanDto[]> {
+        const bans = await this.banQuery(filter).getMany();
+        return bans.map(b => createBanDto(b, b.toUser, b.byUser));
     }
 
     async createBan(
@@ -56,48 +57,29 @@ export class BansService {
         ip: string,
         auth: string,
         isPermanent: number
-    ): Promise<DbBan> {
-        return new Promise((resolve, reject) => {
-            this.database.run(
-                "INSERT INTO bans (toUserId, toUserName, byUserId, reason, startDate, days, ip, auth, isPermanent, isActive) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                [toUserId, toUserName, byUserId, reason, startDate, days, ip, auth, isPermanent, 1],
-                function (err) {
-                    if (err) {
-                        console.error(`Error al crear el ban: ${err}`);
-                        return reject(err);
-                    }
-                    resolve({
-                        id: this.lastID,
-                        toUserId,
-                        toUserName,
-                        byUserId,
-                        reason,
-                        startDate,
-                        days,
-                        ip,
-                        auth,
-                        isPermanent,
-                        isActive: 1,
-                    });
-                }
-            );
+    ): Promise<GetBanDto> {
+        const newBan = this.bansRepository.create({
+            toUser: toUserId ? { id: toUserId } : null,
+            toUserName,
+            byUser: { id: byUserId },
+            reason,
+            startDate: new Date(startDate),
+            days,
+            ip,
+            auth,
+            isPermanent: Boolean(isPermanent),
         });
+
+        const savedBan = await this.bansRepository.save(newBan);
+        return createBanDto(savedBan, savedBan.toUser, savedBan.byUser);
     }
 
-    async updateBan(id: number, newData: Omit<Partial<DbBan>, "id">): Promise<DbBan | null> {
-        return new Promise((resolve, reject) => {
-            const sql = "UPDATE bans SET " + Object.keys(newData).map((key) => `${key} = ?`).join(", ") + " WHERE id = ?";
-            const params = [...Object.values(newData), id];
-            this.database.run(sql, params, function (err) {
-                if (err) {
-                    console.error(`Error al actualizar el ban con ID ${id}: ${err}`);
-                    return reject(err);
-                }
-                if (this.changes === 0) {
-                    return resolve(null);
-                }
-                resolve({ ...newData, id } as DbBan);
-            });
-        });
+    async updateBan(id: number, newData: Omit<DeepPartial<Ban>, "id">): Promise<GetBanDto | null> {
+        const ban = await this.banQuery().where("ban.id = :id", { id }).getOne();
+        if (!ban) return null;
+
+        Object.assign(ban, newData);
+        const updatedBan = await this.bansRepository.save(ban);
+        return createBanDto(updatedBan, updatedBan.toUser, updatedBan.byUser);
     }
 }

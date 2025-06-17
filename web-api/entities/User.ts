@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne } from "typeorm";
 import { Stats } from "./Stats";
-import { Subscription } from "./Subscription";
 import { dateTransformer, nullableDateTransformer } from "../utils/transformers";
+import { Subscription } from "./Subscription/Subscription";
 
 @Entity("users")
 export class User {

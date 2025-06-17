@@ -4,9 +4,9 @@ import { GetUserDto } from "@shared/types/dtos/user.dto";
 
 import { User } from "../entities/User";
 import { Stats } from "../entities/Stats";
-import { Subscription } from "../entities/Subscription";
 import { Season } from "../entities/Season";
 import { Ban } from "../entities/Ban";
+import { Subscription } from "../entities/Subscription/Subscription";
 
 export function calcRating(stats: Stats) {
     const baseScore = 1000;
@@ -25,8 +25,8 @@ export function calcRating(stats: Stats) {
 
 export function createUserDto(
     user: User,
-    userStats: Stats | null,
-    userSubscription?: Subscription | null
+    userStats: Stats | null = null,
+    userSubscription: Subscription | null = null
 ): GetUserDto {
     return {
         id: user.id,
@@ -35,27 +35,8 @@ export function createUserDto(
         discordId: user.discordId,
         createDate: user.createDate.toISOString(),
         lastLoginDate: user.lastLoginDate?.toISOString() || null,
-        stats: userStats
-            ? {
-                  score: userStats.score,
-                  assists: userStats.assists,
-                  matches: userStats.matches,
-                  wins: userStats.wins,
-                  season: createSeasonDto(userStats.season),
-                  rating: calcRating(userStats),
-              }
-            : null,
-        subscription: userSubscription
-            ? {
-                  tier: userSubscription.tier,
-                  startDate: userSubscription.startDate.toISOString(),
-                  scoreAnimId: userSubscription.scoreAnimId,
-                  scoreMessage: userSubscription.scoreMessage,
-                  assistMessage: userSubscription.assistMessage,
-                  joinMessage: userSubscription.joinMessage,
-                  emoji: userSubscription.emoji,
-              }
-            : null,
+        stats: userStats ? createStatsDto(userStats) : null,
+        subscription: userSubscription ? createSubscriptionDto(userSubscription) : null,
     };
 }
 
@@ -68,14 +49,27 @@ export function createSeasonDto(season: Season): SeasonDto {
 }
 
 export function createSubscriptionDto(subscription: Subscription): SubscriptionDto {
+    const scoreAnimId = subscription.properties.find(
+        (p) => p.type.name === "scoreAnimId"
+    )?.value;
+    const scoreMessage = subscription.properties.find(
+        (p) => p.type.name === "scoreMessage"
+    )?.value;
+    const assistMessage = subscription.properties.find(
+        (p) => p.type.name === "assistMessage"
+    )?.value;
+    const joinMessage = subscription.properties.find(
+        (p) => p.type.name === "joinMessage"
+    )?.value;
+    const emoji = subscription.properties.find((p) => p.type.name === "emoji")?.value;
     return {
         tier: subscription.tier,
         startDate: subscription.startDate.toISOString(),
-        scoreAnimId: subscription.scoreAnimId,
-        scoreMessage: subscription.scoreMessage,
-        assistMessage: subscription.assistMessage,
-        joinMessage: subscription.joinMessage,
-        emoji: subscription.emoji,
+        scoreAnimId: scoreAnimId ? parseInt(scoreAnimId, 10) : null,
+        scoreMessage: scoreMessage || null,
+        assistMessage: assistMessage || null,
+        joinMessage: joinMessage || null,
+        emoji: emoji || null,
     };
 }
 
@@ -92,14 +86,14 @@ export function createStatsDto(stats: Stats): StatsDto {
 
 export function createBanDto(
     ban: Ban,
-    user: GetUserDto | null = null,
-    byUser: GetUserDto | null = null
+    toUser: User | null = null,
+    byUser: User | null = null
 ): GetBanDto {
     return {
         id: ban.id,
         name: ban.toUserName,
-        user,
-        byUser,
+        user: toUser ? createUserDto(toUser, null) : null,
+        byUser: byUser ? createUserDto(byUser, null) : null,
         reason: ban.reason,
         startDate: ban.startDate.toISOString(),
         days: ban.days,

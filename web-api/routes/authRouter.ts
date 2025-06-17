@@ -42,8 +42,9 @@ authRouter.post("/login", async (req, res) => {
                 const token = jwt.sign(userDto, secret, { expiresIn: `${expiration}h` });
 
                 usersService.updateUserById(user.id, {
-                    lastLoginDate: new Date().toISOString(),
+                    lastLoginDate: new Date(),
                 });
+                console.log(`Inicio de sesión       # ${user.id} ${user.username}`)
                 res.send({ token, user: userDto } as LoginResponseDto);
                 return;
             }

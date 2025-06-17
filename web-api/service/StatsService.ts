@@ -1,4 +1,3 @@
-import { DbUserStats } from "../types";
 import { Stats } from "../entities/Stats";
 import { AppDataSource } from "../db/data-source";
 import { Season } from "../entities/Season";
@@ -66,7 +65,7 @@ export class StatsService {
 
     async sumStatsByUserId(
         userId: number,
-        newData: Partial<DbUserStats>
+        newData: Partial<Stats>
     ): Promise<StatsDto | null> {
         const stats = await this.statsRepository.findOne({
             where: { user: { id: userId } },
