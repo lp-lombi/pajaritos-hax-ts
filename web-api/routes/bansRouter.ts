@@ -1,10 +1,7 @@
 import express from "express";
-import { getDatabase } from "../db/database";
 import { BansService } from "../service/BansService";
-import Utils from "../utils/Utils";
 import { DbBan } from "../types";
 
-const database = getDatabase();
 const bansService = new BansService(database);
 
 export const bansRouter = express.Router();

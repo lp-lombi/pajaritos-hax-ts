@@ -1,25 +1,20 @@
-import express, { Request } from "express";
-import { getDatabase } from "../db/database";
+import express from "express";
 import { UsersService } from "../service/UsersService";
 import { StatsService } from "../service/StatsService";
-import { SeasonsService } from "../service/SeasonsService";
-import Utils from "../utils/Utils";
 import { SubscriptionsService } from "../service/SubscriptionsService";
 import { DbUser, DbUserStats, DbUserSubscription } from "../types";
 
 export const usersRouter = express.Router();
 
-const database = getDatabase();
-const usersService = new UsersService(database);
-const seasonsService = new SeasonsService(database);
-const statsService = new StatsService(database, seasonsService);
-const subscriptionsService = new SubscriptionsService(database);
+const usersService = UsersService.getInstance()
+const statsService = StatsService.getInstance();
+const subscriptionsService = SubscriptionsService.getInstance();
 
 usersRouter.get("/", async (req, res) => {
     try {
         const filterWithStats = req.query.stats === "true";
-        const filterSubscribed = req.query.subscribed === "true";
-        const users = await Utils.getAllUsersDto(filterWithStats, filterSubscribed);
+        const filterSubscribed = req.query.subscribed === "true" ? true : req.query.subscribed === "false" ? false : undefined;
+        const users = await usersService.getAllUsers({withMatches: filterWithStats, subscribed: filterSubscribed});
         res.send({ users });
     } catch (error) {
         console.error("Error al obtener todos los usuarios:", error);
@@ -34,7 +29,7 @@ usersRouter.get("/:id", async (req, res) => {
         return;
     }
     try {
-        const user = await Utils.getUserDtoByUserId(userId);
+        const user = await usersService.getUserById(userId);
         if (!user) {
             res.status(404).send({ error: "Usuario no encontrado" });
             return;
@@ -68,7 +63,7 @@ usersRouter.patch("/:id", async (req, res) => {
             res.status(404).send({ error: "Usuario no encontrado" });
             return;
         }
-        const userDto = await Utils.getUserDtoByUserId(updatedUser.id);
+        const userDto = await usersService.getUserById(updatedUser.id);
         if (!userDto) {
             res.status(500).send({ error: "No se pudo obtener la información del usuario" });
             return;

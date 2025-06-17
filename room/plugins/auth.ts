@@ -1,7 +1,7 @@
 import { CommandsPlugin, PajaritosBaseLib, PHPlayer, WebApiData } from "../types";
 import { MainReturnType } from "shared/types/node-haxball";
 import { WebApiClient } from "./res/webApiClient";
-import { UserDto } from "@shared/types/webApiDTO";
+import { GetUserDto } from "shared/types/dtos/user.dto";
 
 export default function (API: MainReturnType, webApiData: WebApiData) {
     class AuthPlugin extends API.Plugin {
@@ -27,7 +27,7 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
             return Math.floor(differenceInMilliseconds / oneDayInMilliseconds);
         }
 
-        updateUserData(player: PHPlayer, data: UserDto) {
+        updateUserData(player: PHPlayer, data: GetUserDto) {
             player.user = {
                 id: data.id,
                 username: data.username,

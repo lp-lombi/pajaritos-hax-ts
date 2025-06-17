@@ -1,17 +1,30 @@
 import { EnvFile } from "./utils/EnvFile";
 import path from "path";
 EnvFile.parse(path.join(__dirname, ".env"));
-import express from "express";
-import cors from "cors";
-import { usersRouter } from "./routes/usersRouter";
-import { seasonsRouter } from "./routes/seasonsRouter";
-import { bansRouter } from "./routes/bansRouter";
-import { requireApiKey } from "./middleware/auth";
-import { authRouter } from "./routes/authRouter";
-import { roomsRouter } from "./routes/roomsRoutes";
+import { AppDataSource } from "./db/data-source";
+import { Season } from "./entities/Season";
 
 // var discordBot = require(path.join(__dirname, "./discord/main.js"));
+
 async function init() {
+    await AppDataSource.initialize();
+    const seasonRepository = AppDataSource.getRepository(Season);
+    const currentSeason = await seasonRepository.findOneBy({ isCurrent: true });
+    if (!currentSeason) {
+        const newSeason = seasonRepository.create({ name: "Pajaritos Hax", isCurrent: true });
+        await seasonRepository.save(newSeason);
+        console.log("Temporada actual creada:", newSeason);
+    }
+
+    const express = require("express");
+    const cors = require("cors");
+    const { usersRouter } = await import("./routes/usersRouter");
+    const { seasonsRouter } = await import("./routes/seasonsRouter");
+    //const { bansRouter } = await import("./routes/bansRouter");
+    const { requireApiKey } = await import("./middleware/auth");
+    const { authRouter } = await import("./routes/authRouter");
+    const { roomsRouter } = await import("./routes/roomsRoutes");
+
     const app = express();
 
     app.use(express.json());
@@ -20,7 +33,7 @@ async function init() {
     app.use("/api/v2/auth", authRouter);
     app.use("/api/v2/users", requireApiKey, usersRouter);
     app.use("/api/v2/seasons", requireApiKey, seasonsRouter);
-    app.use("/api/v2/bans", requireApiKey, bansRouter);
+    //app.use("/api/v2/bans", requireApiKey, bansRouter);
     app.use("/api/v2/rooms", requireApiKey, roomsRouter);
 
     const port = 3000;

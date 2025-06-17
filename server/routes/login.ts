@@ -1,4 +1,4 @@
-import { LoginDto } from "@shared/types/webApiDTO";
+import { LoginDto } from "shared/types/dtos/webApiDTO";
 import { Router, Request, Response } from "express";
 const login = Router();
 import { sign } from "jsonwebtoken";

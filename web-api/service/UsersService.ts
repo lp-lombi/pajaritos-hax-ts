@@ -1,116 +1,134 @@
-import { Database } from "sqlite3";
-import { DbUser } from "../types";
 import bcrypt from "bcrypt";
+import { AppDataSource } from "../db/data-source";
+import { User } from "../entities/User";
+import { DeepPartial } from "typeorm";
+import { Stats } from "../entities/Stats";
+import { Season } from "../entities/Season";
+import { GetUserDto } from "@shared/types/dtos/user.dto";
+import { createUserDto } from "../utils/dto-mappers";
+
+export interface UserFilters {
+    withMatches?: boolean;
+    subscribed?: boolean;
+    byRole?: number;
+    bySeasonId?: number;
+}
 
 export class UsersService {
-    #database: Database;
-    constructor(database: Database) {
-        this.#database = database;
-    }
+    private static instance: UsersService;
+    private constructor(
+        private usersRepository = AppDataSource.getRepository(User),
+        private statsRepository = AppDataSource.getRepository(Stats),
+        private seasonsRepository = AppDataSource.getRepository(Season)
+    ) {}
 
-    async getAllUsers(filterWithStats = false, filterSubscribed = false): Promise<DbUser[]> {
-        const filters: string[] = [];
-        if (filterWithStats) {
-            filters.push(
-                "EXISTS (SELECT 1 FROM stats WHERE users.id = stats.userId AND stats.matches > 0)"
-            );
+    static getInstance(): UsersService {
+        if (!this.instance) {
+            this.instance = new UsersService();
         }
-        if (filterSubscribed) {
-            filters.push(
-                "EXISTS (SELECT 1 FROM subscriptions WHERE users.id = subscriptions.userId)"
-            );
+        return this.instance;
+    }
+
+    userQuery(filter: UserFilters = {}) {
+        const query = this.usersRepository.createQueryBuilder("user")
+            .leftJoinAndSelect("user.stats", "stats")
+            .leftJoinAndSelect("user.subscription", "subscription")
+            .leftJoinAndSelect("stats.season", "season");
+        if (filter.withMatches) {
+            query.andWhere("stats.matches > :matches", { matches: 0 });
         }
-        const filtersSql = filters.length ? ` WHERE ${filters.join(" AND ")}` : "";
-
-        return new Promise((resolve, reject) => {
-            const sql = "SELECT * FROM users" + filtersSql;
-            this.#database.all<DbUser>(sql, (err, rows) => {
-                if (err) {
-                    return reject(err);
-                }
-                resolve(rows);
-            });
-        });
+        if (filter.subscribed === true) {
+            query.andWhere("subscription.id IS NOT NULL");  
+        } else if (filter.subscribed === false) {
+            query.andWhere("subscription.id IS NULL");
+        }
+        if (filter.byRole !== undefined) {
+            query.andWhere("user.role = :role", { role: filter.byRole });
+        }
+        if (filter.bySeasonId !== undefined) {
+            query.andWhere("season.id = :seasonId", { seasonId: filter.bySeasonId });
+        }
+        return query;
     }
 
-    async getUserById(id: number): Promise<DbUser | null> {
-        return new Promise((resolve, reject) => {
-            this.#database.get<DbUser>("SELECT * FROM users WHERE id = ?", [id], (err, row) => {
-                if (err) {
-                    console.error(`Error al obtener el usuario con ID ${id}: ${err}`);
-                    return reject(err);
-                }
-                resolve(row || null);
-            });
-        });
-    }
-
-    async getUserByUsername(username: string): Promise<DbUser | null> {
-        return new Promise((resolve, reject) => {
-            this.#database.get<DbUser>(
-                "SELECT * FROM users WHERE username = ?",
-                [username],
-                (err, row) => {
-                    if (err) {
-                        console.error(`Error al obtener el usuario con nombre ${username}: ${err}`);
-                        return reject(err);
-                    }
-                    resolve(row || null);
-                }
+    /**
+     * Obtiene todos los usuarios, opcionalmente filtrando por stats (temporada actual) y suscripción.
+     */
+    async getAllUsers(filter: UserFilters): Promise<GetUserDto[]> {
+        const users = await this.userQuery(filter).getMany();
+        return users.map((user) => {
+            return createUserDto(
+                user,
+                user.stats[0] || null,
+                user.subscription
             );
         });
     }
 
+    /**
+     * Obtiene un usuario por su ID.
+     */
+    async getUserById(id: number): Promise<GetUserDto | null> {
+        const user = await this.userQuery().where("user.id = :id", { id }).getOne();
+        return user
+            ? createUserDto(
+                  user,
+                  user.stats.find((s) => s.season.isCurrent) || null,
+                  user.subscription
+              )
+            : null;
+    }
+
+    async getUserByUsername(username: string): Promise<GetUserDto | null> {
+        const user = await this.userQuery().where("user.username = :username", { username }).getOne();
+        return user ? createUserDto(
+            user,
+            user.stats.find((s) => s.season.isCurrent) || null,
+            user.subscription
+        ) : null;
+    }
+
+    /**
+     * Crea un nuevo usuario y asigna estadísticas iniciales para la temporada actual.
+     */
     async createUser(
         username: string,
         password: string,
         role: number,
         discordId: string | null = null
-    ): Promise<DbUser> {
-        return new Promise(async (resolve, reject) => {
-            const hashedPassword = await bcrypt.hash(password, 10);
-            this.#database.run(
-                "INSERT INTO users (username, password, role, discordId) VALUES (?, ?, ?, ?)",
-                [username, hashedPassword, role],
-                function (err) {
-                    if (err) {
-                        console.error(`Error al crear el usuario ${username}: ${err}`);
-                        return reject(err);
-                    }
-                    resolve({
-                        id: this.lastID,
-                        username,
-                        password: hashedPassword,
-                        role,
-                        discordId,
-                        createDate: new Date().toISOString(),
-                        lastLoginDate: null,
-                    });
-                }
-            );
+    ): Promise<GetUserDto> {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const season = await this.seasonsRepository.findOneOrFail({ where: { isCurrent: true } });
+        const user = this.usersRepository.create({
+            username,
+            password: hashedPassword,
+            role,
+            discordId,
+            createDate: new Date(),
         });
+        const newUser = await this.usersRepository.save(user);
+        const stats = this.statsRepository.create({
+            user: newUser,
+            season
+        });
+        await this.statsRepository.save(stats);
+        newUser.stats = [stats]; // Asignar las stats recién creadas al usuario
+        return createUserDto(
+            newUser,
+            newUser.stats.find((s) => s.season.isCurrent) || null,
+            newUser.subscription
+        );
     }
 
-    async updateUserById(id: number, newData: Partial<DbUser>): Promise<DbUser | null> {
-        let sql = "UPDATE users SET ";
-        sql += Object.keys(newData)
-            .map((key) => `${key} = ?`)
-            .join(", ");
-        sql += " WHERE id = ?";
-        const params = [...Object.values(newData), id];
-        return new Promise((resolve, reject) => {
-            const that = this;
-            this.#database.run(sql, params, async function (err) {
-                if (err) {
-                    console.error(`Error al actualizar el usuario con ID ${id}: ${err}`);
-                    return reject(err);
-                }
-                if (this.changes === 0) {
-                    return resolve(null); // No se encontró el usuario
-                }
-                const updatedUser = await that.getUserById(id);
-                resolve(updatedUser); // Devuelve el usuario actualizado
-            });
-        });
+    async updateUserById(id: number, newData: DeepPartial<User>): Promise<GetUserDto | null> {
+        const user = await this.usersRepository.findOne({ where: { id } });
+        if (!user) return null;
+        Object.assign(user, newData);
+        const updatedUser = await this.usersRepository.save(user);
+        return createUserDto(
+            updatedUser,
+            updatedUser.stats.find((s) => s.season.isCurrent) || null,
+            updatedUser.subscription
+        );
     }
 }

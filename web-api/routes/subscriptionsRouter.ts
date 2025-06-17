@@ -1,13 +1,10 @@
 import express from "express";
-import { getDatabase } from "../db/database";
 import { SubscriptionsService } from "../service/SubscriptionsService";
 import { DbUserSubscription } from "../types";
-import Utils from "../utils/Utils";
-import { deprecate } from "util";
+import { UsersService } from "../service/UsersService";
 
-const database = getDatabase();
-const subscriptionsService = new SubscriptionsService(database);
-
+const usersService = UsersService.getInstance();
+const subscriptionsService = SubscriptionsService.getInstance();
 
 /**
  * @deprecated Se usa desde el router de Users.
@@ -35,7 +32,7 @@ subscriptionsRouter.post("/:userId", async (req, res) => {
     }
     try {
         await subscriptionsService.createSubscription(userId, tier, startDate);
-        res.send({ success: true, user: await Utils.getUserDtoByUserId(userId) });
+        res.send({ success: true, user: await usersService.getUserById(userId) });
     } catch (error) {
         console.error("Error al crear la suscripción:", error);
         res.status(500).send({ error: "Error al crear la suscripción" });
@@ -60,7 +57,7 @@ subscriptionsRouter.patch("/:userId", async (req, res) => {
     }
     try {
         subscriptionsService.updateSubscription(userId, updateObj);
-        res.send({ success: true, user: await Utils.getUserDtoByUserId(userId) });
+        res.send({ success: true, user: await usersService.getUserById(userId) });
     } catch (error) {
         console.error("Error al actualizar la suscripción:", error);
         res.status(500).send({ error: "Error al actualizar la suscripción" });

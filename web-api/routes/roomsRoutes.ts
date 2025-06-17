@@ -1,9 +1,9 @@
-import { ApiRoomDTO } from "@shared/types/webApiDTO";
+import { ApiRoomDto } from "@shared/types/dtos/misc.dto";
 import express from "express";
 
 
 export const roomsRouter = express.Router();
-export const roomsList: ApiRoomDTO[] = [];
+export const roomsList: ApiRoomDto[] = [];
 
 const interval = setInterval(() => {
     roomsList.forEach((r) => {

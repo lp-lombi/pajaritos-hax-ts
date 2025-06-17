@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { UserDto } from "@shared/types/webApiDTO";
+import { GetUserDto } from "@shared/types/dtos/user.dto";
 import { ApiKey } from "../utils/ApiKey";
 
 export function isAdmin(req: Request, res: Response, next: NextFunction) {
@@ -10,9 +10,9 @@ export function isAdmin(req: Request, res: Response, next: NextFunction) {
         return;
     }
 
-    let userDto: UserDto;
+    let userDto: GetUserDto;
     try {
-        userDto = jwt.verify(authorization, process.env.JWT_SECRET as jwt.Secret) as UserDto;
+        userDto = jwt.verify(authorization, process.env.JWT_SECRET as jwt.Secret) as GetUserDto;
     } catch (error) {
         console.log("Error verifying token:", error);
         res.status(401).json({ error: "Invalid token" });
@@ -33,9 +33,9 @@ export function isRoot(req: Request, res: Response, next: NextFunction) {
         return;
     }
 
-    let userDto: UserDto;
+    let userDto: GetUserDto;
     try {
-        userDto = jwt.verify(authorization, process.env.JWT_SECRET as jwt.Secret) as UserDto;
+        userDto = jwt.verify(authorization, process.env.JWT_SECRET as jwt.Secret) as GetUserDto;
     } catch (error) {
         console.log("Error verifying token:", error);
         res.status(401).json({ error: "Invalid token" });

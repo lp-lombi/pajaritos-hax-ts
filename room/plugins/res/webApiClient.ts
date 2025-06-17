@@ -1,5 +1,6 @@
+import { GetUserDto, LoginRequestDto } from "@shared/types/dtos/user.dto";
 import { PajaritosBaseLib, WebApiData } from "../../types";
-import { StatsDto, UserDto, SubscriptionDto } from "shared/types/webApiDTO";
+import { StatsDto, SubscriptionDto } from "shared/types/dtos/misc.dto";
 
 export class WebApiClient {
     constructor(private webApiData: WebApiData, private phLib: PajaritosBaseLib) {}
@@ -12,7 +13,7 @@ export class WebApiClient {
             if (response.ok) {
                 const data = (await response.json()) as any;
                 if (data.user) {
-                    return data.user as UserDto;
+                    return data.user as GetUserDto;
                 }
                 return null;
             } else {
@@ -34,7 +35,7 @@ export class WebApiClient {
             });
             if (response.ok) {
                 const data = (await response.json()) as any;
-                return (data.users as UserDto[]) || [];
+                return (data.users as GetUserDto[]) || [];
             } else {
                 console.error("Error al obtener los usuarios: " + response.status);
                 return [];
@@ -47,6 +48,7 @@ export class WebApiClient {
 
     async requestLogin(username: string, password: string) {
         try {
+            const dto: LoginRequestDto = { username, password }
             const response = await fetch(this.webApiData.url + "/auth/login", {
                 method: "POST",
                 headers: { "x-api-key": this.webApiData.key, "Content-Type": "application/json" },
@@ -55,7 +57,7 @@ export class WebApiClient {
             if (response.ok) {
                 const data = (await response.json()) as any;
                 if (data.user) {
-                    return data.user as UserDto;
+                    return data.user as GetUserDto;
                 }
                 return null;
             } else {
@@ -78,7 +80,7 @@ export class WebApiClient {
             if (response.ok) {
                 const data = (await response.json()) as any;
                 if (data.user) {
-                    return data.user as UserDto;
+                    return data.user as GetUserDto;
                 }
                 return null;
             } else {
@@ -104,7 +106,7 @@ export class WebApiClient {
             if (response.ok) {
                 const data = (await response.json()) as any;
                 if (data.user) {
-                    return data.user as UserDto;
+                    return data.user as GetUserDto;
                 }
                 return null;
             } else {

@@ -1,101 +1,84 @@
-import { Database } from "sqlite3";
 import { DbUserStats } from "../types";
-import { SeasonsService } from "./SeasonsService";
+import { Stats } from "../entities/Stats";
+import { AppDataSource } from "../db/data-source";
+import { Season } from "../entities/Season";
+import { DeepPartial } from "typeorm";
+import { StatsDto } from "@shared/types/dtos/misc.dto";
+import { createStatsDto } from "../utils/dto-mappers";
 
 export class StatsService {
-    constructor(private database: Database, private seasonsService: SeasonsService) {}
+    private static instance: StatsService;
+    private constructor(
+        private statsRepository = AppDataSource.getRepository(Stats),
+        private seasonsRepository = AppDataSource.getRepository(Season)
+    ) {}
+    static getInstance(): StatsService {
+        if (!this.instance) {
+            this.instance = new StatsService();
+        }
+        return this.instance;
+    }
 
     /**
      * Si no se proporciona un seasonId, se obtiene la temporada actual.
      */
-    async getStatsByUserId(userId: number, seasonId: number | null = null): Promise<DbUserStats | null> {
-        const currentSeasonId = seasonId || (await this.seasonsService.getCurrentSeason())?.id
-        if (!currentSeasonId) {
-            console.error("No se pudo obtener la temporada actual");
+    async getStatsByUserId(
+        userId: number,
+        seasonId: number | null = null
+    ): Promise<StatsDto | null> {
+        const season = seasonId
+            ? await this.seasonsRepository.findOne({ where: { id: seasonId } })
+            : await this.seasonsRepository.findOneByOrFail({ isCurrent: true });
+        if (!season) {
+            console.error("No se encontró la temporada actual o la temporada especificada.");
             return null;
         }
-        return new Promise((resolve, reject) => {
-            this.database.get<DbUserStats>(
-                "SELECT * FROM stats WHERE userId = ? AND seasonId = ?",
-                [userId, currentSeasonId],
-                (err, row) => {
-                    if (err) {
-                        console.error(`Error al obtener los stats del usuario ID ${userId}: ${err}`);
-                        return reject(err);
-                    }
-                    resolve(row || null);
-                }
-            );
+        const stats = await this.statsRepository.findOne({
+            where: {
+                user: { id: userId },
+                season: { id: season.id },
+            },
+            relations: ["season"],
         });
-    }
-
-    async createUserStats(userId: number, score: number = 0, assists: number = 0, matches: number = 0, wins: number = 0): Promise<DbUserStats> {
-        const currentSeasonId = (await this.seasonsService.getCurrentSeason())?.id;
-        if (!currentSeasonId) {
-            throw new Error("No se pudo obtener la temporada actual");
+        if (!stats) {
+            console.error(
+                `No se encontraron stats para el usuario con ID ${userId} en la temporada ${season.id}.`
+            );
+            return null;
         }
-        return new Promise((resolve, reject) => {
-            this.database.run(
-                "INSERT INTO stats (userId, seasonId, score, assists, matches, wins) VALUES (?, ?, ?, ?, ?, ?)",
-                [userId, currentSeasonId, score, assists, matches, wins],
-                function (err) {
-                    if (err) {
-                        console.error(`Error al crear los stats del usuario ${userId}: ${err}`);
-                        return reject(err);
-                    }
-                    resolve({ id: this.lastID, userId, seasonId: currentSeasonId, score, assists, matches, wins});
-                }
-            );
-        });
+        return createStatsDto(stats);
     }
 
-    async updateStatsByUserId(userId: number, newData: Partial<DbUserStats>): Promise<DbUserStats | null> {
-        let sql = "UPDATE stats SET ";
-        sql += Object.keys(newData)
-            .map((key) => `${key} = ?`)
-            .join(", ");
-        sql += " WHERE userId = ?";
-        const params = [...Object.values(newData), userId];
-        return new Promise(async (resolve, reject) => {
-            const that = this;
-            const existingStats = await this.getStatsByUserId(userId);
-            if (!existingStats) await this.createUserStats(userId);
-            this.database.run(sql, params, async function (err) {
-                if (err) {
-                    console.error(`Error al actualizar los stats con ID ${userId}: ${err}`);
-                    return reject(err);
-                }
-                if (this.changes === 0) {
-                    return resolve(null); 
-                }
-                const updatedStats = await that.getStatsByUserId(userId);
-                resolve(updatedStats);
-            });
+    async updateStatsByUserId(
+        userId: number,
+        newData: DeepPartial<Stats>
+    ): Promise<StatsDto | null> {
+        const stats = await this.statsRepository.findOne({
+            where: { user: { id: userId } },
+            relations: ["season"],
         });
+        if (!stats) return null;
+
+        Object.assign(stats, newData);
+        await this.statsRepository.save(stats);
+        return createStatsDto(stats);
     }
 
-    async sumStatsByUserId(userId: number, newData: Partial<DbUserStats>): Promise<DbUserStats | null> {
-        let sql = "UPDATE stats SET ";
-        sql += Object.keys(newData)
-            .map((key) => `${key} = ${key} + ?`)
-            .join(", ");
-        sql += " WHERE userId = ?";
-        const params = [...Object.values(newData), userId];
-        return new Promise(async (resolve, reject) => {
-            const that = this;
-            const existingStats = await this.getStatsByUserId(userId);
-            if (!existingStats) await this.createUserStats(userId);
-            this.database.run(sql, params, async function (err) {
-                if (err) {
-                    console.error(`Error al actualizar los stats con ID ${userId}: ${err}`);
-                    return reject(err);
-                }
-                if (this.changes === 0) {
-                    return resolve(null); 
-                }
-                const updatedStats = await that.getStatsByUserId(userId);
-                resolve(updatedStats);
-            });
+    async sumStatsByUserId(
+        userId: number,
+        newData: Partial<DbUserStats>
+    ): Promise<StatsDto | null> {
+        const stats = await this.statsRepository.findOne({
+            where: { user: { id: userId } },
+            relations: ["season"],
         });
+        if (!stats) return null;
+
+        stats.score += newData.score || 0;
+        stats.assists += newData.assists || 0;
+        stats.matches += newData.matches || 0;
+        stats.wins += newData.wins || 0;
+        await this.statsRepository.save(stats);
+        return createStatsDto(stats);
     }
 }
