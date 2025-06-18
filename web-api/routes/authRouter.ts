@@ -26,9 +26,7 @@ authRouter.post("/login", async (req, res) => {
     try {
         const user = await usersRepository.findOneBy({ username });
         if (user) {
-            console.log(user.password)
             const isPasswordValid = bcrypt.compareSync(password, user.password);
-            console.log(`Intento de inicio de sesión # ${user.id} ${user.username} - ${isPasswordValid ? "Éxito" : "Fallo"}`);
             if (isPasswordValid) {
                 const userDto = await usersService.getUserById(user.id);
                 if (!userDto) {

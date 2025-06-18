@@ -297,7 +297,6 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
                             }
                         }
                         if (updatedData) {
-                            console.log(updatedData)
                             this.updateSubscriptionData(player, updatedData);
                             this.commands.chat.announce(
                                 `Se actualizó tu ${updateName} a: < ${message} >`,
