@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { AuthPlugin, PajaritosBaseLib } from "room/types";
 import { getPajaritosLib } from "../utils";
 const players = Router();
 

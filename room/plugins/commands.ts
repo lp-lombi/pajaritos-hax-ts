@@ -55,6 +55,15 @@ export default function (API: MainReturnType, customData: CommandsPluginData, da
             return false;
         }
 
+        isUserSubscriptionValid(playerId: number, requiredTier: number) {
+            if (requiredTier === 0) return true;
+            const player = this.phLib.getPlayer(playerId);
+            if (player && player.user.subscription) {
+                return player.user.subscription.tier >= requiredTier ? true : false;
+            }
+            return false;
+        }
+
         registerCommand(
             prefix: string,
             name: string,
@@ -181,7 +190,18 @@ export default function (API: MainReturnType, customData: CommandsPluginData, da
                     const cmdSign = args.splice(0, 1)[0];
                     const command = this.commandsList.find((c) => c.prefix + c.name === cmdSign);
                     if (command && this.isUserRoleAuthorized(msg.byId, command.role)) {
-                        command.exec(msg, args);
+                        if (
+                            command.vipTier > 0 &&
+                            !this.isUserSubscriptionValid(msg.byId, command.vipTier)
+                        ) {
+                            this.chat.announce(
+                                "😔 Comando exclusivo para usuarios VIPs. ¡Entrá a nuestro !discord para más información!.",
+                                msg.byId,
+                                "error"
+                            );
+                        } else {
+                            command.exec(msg, args);
+                        }
                         return false;
                     }
                     this.chat.announce("Comando desconocido.", msg.byId);

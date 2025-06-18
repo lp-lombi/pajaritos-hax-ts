@@ -55,8 +55,8 @@ export function createSubscriptionDto(subscription: Subscription): SubscriptionD
     const scoreMessage = subscription.properties.find(
         (p) => p.type.name === "scoreMessage"
     )?.value;
-    const assistMessage = subscription.properties.find(
-        (p) => p.type.name === "assistMessage"
+    const chatColor = subscription.properties.find(
+        (p) => p.type.name === "chatColor"
     )?.value;
     const joinMessage = subscription.properties.find(
         (p) => p.type.name === "joinMessage"
@@ -67,7 +67,7 @@ export function createSubscriptionDto(subscription: Subscription): SubscriptionD
         startDate: subscription.startDate.toISOString(),
         scoreAnimId: scoreAnimId ? parseInt(scoreAnimId, 10) : null,
         scoreMessage: scoreMessage || null,
-        assistMessage: assistMessage || null,
+        chatColor: chatColor || null,
         joinMessage: joinMessage || null,
         emoji: emoji || null,
     };

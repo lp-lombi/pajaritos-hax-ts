@@ -15,6 +15,20 @@ seasonsRouter.get("/", async (req, res) => {
     }
 });
 
+seasonsRouter.get("/current", async (req, res) => {
+    try {
+        const currentSeason = await seasonsService.getCurrentSeason();
+        if (!currentSeason) {
+            res.status(404).json({ error: "No hay temporada actual" });
+            return;
+        }
+        res.json({ season: currentSeason });
+    } catch (error) {
+        console.error("Error al obtener la temporada actual:", error);
+        res.status(500).json({ error: "Error al obtener la temporada actual" });
+    }
+});
+
 seasonsRouter.get("/:id", async (req, res) => {
     const seasonId = parseInt(req.params.id, 10);
     if (isNaN(seasonId)) {
@@ -31,20 +45,6 @@ seasonsRouter.get("/:id", async (req, res) => {
     } catch (error) {
         console.error("Error al obtener la temporada:", error);
         res.status(500).json({ error: "Error al obtener la temporada" });
-    }
-});
-
-seasonsRouter.get("/current", async (req, res) => {
-    try {
-        const currentSeason = await seasonsService.getCurrentSeason();
-        if (!currentSeason) {
-            res.status(404).json({ error: "No hay temporada actual" });
-            return;
-        }
-        res.json({ season: currentSeason });
-    } catch (error) {
-        console.error("Error al obtener la temporada actual:", error);
-        res.status(500).json({ error: "Error al obtener la temporada actual" });
     }
 });
 

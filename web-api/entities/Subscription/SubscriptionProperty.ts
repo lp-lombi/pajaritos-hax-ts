@@ -13,6 +13,6 @@ export class SubscriptionProperty {
     @ManyToOne(() => SubscriptionPropertyType)
     type: SubscriptionPropertyType;
 
-    @Column({ type: "text" })
+    @Column({ type: "text", nullable: true })
     value: string;
 }

@@ -145,8 +145,8 @@ export class WebApiClient {
                 return null;
             }
             const data = (await response.json()) as any;
-            if (data.subscription) {
-                return data.subscription as SubscriptionDto;
+            if (data.user?.subscription) {
+                return data.user?.subscription as SubscriptionDto;
             } else {
                 console.error("Error al actualizar los datos de suscripción: " + response.status);
                 return null;

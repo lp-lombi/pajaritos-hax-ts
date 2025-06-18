@@ -76,15 +76,17 @@ export default function (API: MainReturnType) {
             }
             const ballEmoji = player.team.id === 1 ? "🔴" : player.team.id === 2 ? "🔵" : "⚪";
 
-            let teamColor: number;
-            if (player.team.id === 1) {
-                teamColor = player.user.subscription ? this.colors.redTeamVip : this.colors.redTeam;
+            let chatColor: number;
+            if (player.user?.subscription?.chatColor) {
+                chatColor = player.user.subscription.chatColor;
+            } else if (player.team.id === 1) {
+                chatColor = player.user.subscription ? this.colors.redTeamVip : this.colors.redTeam;
             } else if (player.team.id === 2) {
-                teamColor = player.user.subscription
+                chatColor = player.user.subscription
                     ? this.colors.blueTeamVip
                     : this.colors.blueTeam;
             } else {
-                teamColor = player.user.subscription ? this.colors.vip : this.colors.white;
+                chatColor = player.user.subscription ? this.colors.vip : this.colors.white;
             }
 
             const str = `${loggedEmoji}[${ballEmoji}] ${player.name}: ${msg}`;
@@ -93,9 +95,9 @@ export default function (API: MainReturnType) {
                 if (p.mutedPlayersIds.includes(byId)) {
                     return;
                 }
-                this.room.sendAnnouncement(str, p.id, teamColor, 1, 1);
+                this.room.sendAnnouncement(str, p.id, chatColor, 1, 1);
             });
-            this.logChat(str, teamColor, "small-bold");
+            this.logChat(str, chatColor, "small-bold");
         }
 
         privateChat(msg: string, targetId: number, byId: number) {

@@ -42,6 +42,6 @@ export class Ban {
     @Column({ type: "numeric", transformer: booleanToNumberTransformer, default: 0 })
     isPermanent: boolean;
 
-    @Column({ type: "numeric", transformer: booleanToNumberTransformer, default: 0 })
+    @Column({ type: "numeric", transformer: booleanToNumberTransformer, default: 1 })
     isActive: boolean;
 }

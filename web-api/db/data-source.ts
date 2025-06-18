@@ -35,15 +35,16 @@ export const subscriptionPropertyTypes: Omit<SubscriptionPropertyType, "id">[] =
         tier: 1,
     },
     {
+        name: "chatColor",
+        description: "Color el mensaje al chatear",
+        tier: 1,
+    },
+    {
         name: "scoreMessage",
         description: "Mensaje al hacer un gol",
         tier: 1,
     },
-    {
-        name: "assistMessage",
-        description: "Mensaje al dar una asistencia",
-        tier: 1,
-    },
+
     {
         name: "joinMessage",
         description: "Mensaje al unirse a la sala",

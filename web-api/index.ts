@@ -7,7 +7,7 @@ import { AppDataSource, defaultDbValues } from "./db/data-source";
 
 async function init() {
     await AppDataSource.initialize();
-    defaultDbValues();
+    await defaultDbValues();
 
     const express = require("express");
     const cors = require("cors");

@@ -1,5 +1,7 @@
 node_modules
 dist
 *.db
+*.sqlite
 roomConfig.json
 *.hbs
+.env

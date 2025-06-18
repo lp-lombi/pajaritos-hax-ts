@@ -146,7 +146,7 @@ usersRouter.patch("/:id/subscription", async (req, res) => {
         "tier",
         "scoreAnimId",
         "scoreMessage",
-        "assistMessage",
+        "chatColor",
         "joinMessage",
         "emoji",
     ];

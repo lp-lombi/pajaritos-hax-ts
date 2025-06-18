@@ -42,9 +42,9 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
                     player.user.subscription = {
                         tier: data.subscription.tier,
                         startDate: data.subscription.startDate,
+                        chatColor: data.subscription.chatColor ? parseInt(data.subscription.chatColor, 16) : null,
                         scoreAnimId: data.subscription.scoreAnimId || 0,
                         scoreMessage: data.subscription.scoreMessage || "",
-                        assistMessage: data.subscription.assistMessage || "",
                         joinMessage: data.subscription.joinMessage || "",
                         emoji: data.subscription.emoji || "",
                     };
@@ -80,31 +80,6 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
         isPlayerSubscribed(playerId: number) {
             const p = this.phLib.getPlayer(playerId);
             return p && p.user.subscription && p.user.subscription?.tier >= 1;
-        }
-
-        async sumUserStats(
-            username: string,
-            score: number,
-            assists: number,
-            wins: number,
-            matches: number
-        ) {
-            /*             fetch(this.webApiData.url + "/users/stats/sum", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "x-api-key": this.webApiData.key,
-                },
-                body: JSON.stringify({
-                    username,
-                    score,
-                    assists,
-                    wins,
-                    matches,
-                }),
-            }).catch((err) => {
-                console.log(`Error al actualizar los stats de ${username}: ` + err);
-            }); */
         }
 
         override initialize = () => {
@@ -199,7 +174,20 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
                         }
                         this.updateUserData(player, loggedUser);
                         this.commands.chat.announce("Inicio de sesión exitoso 🕊️", msg.byId);
-                        console.log(`Inicio de sesión: ${player.user.username}      #${player.user.id}`)
+                        setTimeout(() => {
+                            if (player?.user.subscription?.joinMessage) {
+                                this.commands.chat.announce(
+                                    `¡Llegó ${player.user.username}!\n  - ${player.user.subscription.joinMessage}`,
+                                    null,
+                                    "announcement-big",
+                                    2
+                                );
+                            }
+                        }, 500);
+
+                        console.log(
+                            `Inicio de sesión: ${player.user.username}      #${player.user.id}`
+                        );
                     }
                 },
                 "Iniciar la sesión. ' !login <contraseña> '",

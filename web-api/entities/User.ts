@@ -1,7 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne, AfterInsert } from "typeorm";
 import { Stats } from "./Stats";
 import { dateTransformer, nullableDateTransformer } from "../utils/transformers";
 import { Subscription } from "./Subscription/Subscription";
+import { AppDataSource } from "../db/data-source";
+import { Season } from "./Season";
 
 @Entity("users")
 export class User {
@@ -40,4 +42,12 @@ export class User {
     @OneToOne(() => Subscription, subscription => subscription.user, { nullable: true })
     subscription: Subscription | null;
 
+    @AfterInsert()
+    async createStats() {
+        const statsRepository = AppDataSource.getRepository(Stats);
+        const seasonRepository = AppDataSource.getRepository(Season);
+        const currentSeason = await seasonRepository.findOneOrFail({ where: { isCurrent: true } });
+        const stats = statsRepository.create({ user: this, season: currentSeason });
+        await statsRepository.save(stats);
+    }
 }

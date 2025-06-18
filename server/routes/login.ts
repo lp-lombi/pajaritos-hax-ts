@@ -1,4 +1,4 @@
-import { LoginDto } from "shared/types/dtos/webApiDTO";
+import { LoginResponseDto } from "@shared/types/dtos/misc.dto";
 import { Router, Request, Response } from "express";
 const login = Router();
 import { sign } from "jsonwebtoken";
@@ -17,7 +17,7 @@ login.post("/", async (req: Request, res: Response) => {
         });
 
         if (response.ok) {
-            const data: LoginDto = await response.json();
+            const data: LoginResponseDto = await response.json();
             if (data.user.role > 0) {
                 const token = sign(data, global.jwtSecret, {
                     expiresIn: "2h",

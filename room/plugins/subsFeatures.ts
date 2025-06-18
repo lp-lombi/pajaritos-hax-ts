@@ -22,6 +22,10 @@ function isEmoji(char: string) {
     return emojiRegex.test(char);
 }
 
+function isHexColor(str: string) {
+    return /^([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(str);
+}
+
 function getFirstEmoji(str: string) {
     const match = str.match(emojiRegex);
     return match ? match[0] : null;
@@ -47,9 +51,9 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
                     if (discId >= 1) {
                         let r = 15;
                         let interval = setInterval(() => {
-                            r += 0.9;
+                            r += 1.25;
                             this.room.setDiscProperties(discId, { radius: r });
-                        }, 100);
+                        }, 75);
                         setTimeout(() => {
                             clearInterval(interval);
                         }, 1500);
@@ -123,14 +127,14 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
             });
         }
 
-        updateSubscriptionDto(player: PHPlayer, subscription: SubscriptionDto) {
+        updateSubscriptionData(player: PHPlayer, subscription: SubscriptionDto) {
             if (player.user) {
                 player.user.subscription = {
                     tier: subscription.tier,
                     startDate: subscription.startDate,
                     scoreAnimId: subscription.scoreAnimId || 0,
                     scoreMessage: subscription.scoreMessage || "",
-                    assistMessage: subscription.assistMessage || "",
+                    chatColor: subscription.chatColor ? parseInt(subscription.chatColor, 16) : null,
                     joinMessage: subscription.joinMessage || "",
                     emoji: subscription.emoji || "",
                 };
@@ -209,11 +213,15 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
                     "custom",
                     async (msg, args) => {
                         if (args.length < 2) {
-                            this.commands.chat.announce(
-                                "Uso: ' !custom <emoji | mensajegol | mensajeasist> <🕊️ | Este es el mensaje> '",
-                                msg.byId,
-                                "error"
-                            );
+                            const str =
+                                "Uso:\n" +
+                                "!custom color FFA1A1       || Color al chatear en formato hexadecimal (obtener en https://htmlcolorcodes.com/)\n" +
+                                "!custom emoji 🕊️       || Emoji personalizado al chatear\n" +
+                                "!custom mensajegol ¡Mensaje de gol!        || Mensaje personalizado al hacer un gol\n" +
+                                "!custom mensajejoin ¡Ya llegué!        || Mensaje personalizado al unirse a la sala\n" +
+                                "!custom reset all      ||        Resetea los datos de suscripción (emoji, mensajes, color de chat)";
+
+                            this.commands.chat.announce(str, msg.byId, "error");
                             return;
                         }
                         const player = this.phLib.getPlayer(msg.byId);
@@ -224,7 +232,7 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
 
                         var updatedData;
                         var updateName = "";
-                        const message = args.slice(1).join(" ");
+                        var message = args.slice(1).join(" ");
                         switch (args[0]) {
                             case "emoji": {
                                 updateName = "emoji";
@@ -250,17 +258,47 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
                                 );
                                 break;
                             }
-                            case "mensajeasist": {
-                                updateName = "mensaje de asistencia";
+                            case "mensajejoin": {
+                                updateName = "mensaje de bienvenida";
                                 updatedData = await this.webApiClient.updatePlayerSubscriptionData(
                                     msg.byId,
-                                    { assistMessage: message }
+                                    { joinMessage: message }
                                 );
                                 break;
                             }
+                            case "color": {
+                                updateName = "color de chat";
+                                if (!isHexColor(message)) {
+                                    this.commands.chat.announce(
+                                        "El color no es válido. Podés generar un color hexadecimal (de 6 caracteres, ej: FFA1B1) en https://htmlcolorcodes.com/",
+                                        msg.byId,
+                                        "error"
+                                    );
+                                    return;
+                                }
+                                updatedData = await this.webApiClient.updatePlayerSubscriptionData(
+                                    msg.byId,
+                                    { chatColor: message }
+                                );
+                                break;
+                            } case "reset": {
+                                if (args[1] && args[1] !== "all") return;
+                                updateName = "información de suscripción";
+                                message = "reiniciar todos los datos"
+                                updatedData = await this.webApiClient.updatePlayerSubscriptionData(
+                                    msg.byId,
+                                    {
+                                        emoji: "",
+                                        scoreMessage: "",
+                                        joinMessage: "",
+                                        chatColor: null,
+                                    }
+                                );
+                            }
                         }
                         if (updatedData) {
-                            this.updateSubscriptionDto(player, updatedData);
+                            console.log(updatedData)
+                            this.updateSubscriptionData(player, updatedData);
                             this.commands.chat.announce(
                                 `Se actualizó tu ${updateName} a: < ${message} >`,
                                 msg.byId
@@ -384,7 +422,7 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
                     "En las salas Juegan Todos, permite cambiar el tamaño del disco.",
                     false,
                     0,
-                    1
+                    0 // TODO: mover a gamemodes.ts
                 );
             }
         };

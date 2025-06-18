@@ -54,19 +54,11 @@ export class SeasonsService {
      */
     async createSeason(name: string): Promise<SeasonDto> {
         const newSeason = this.seasonsRepository.create({ name, isCurrent: true });
-        await this.seasonsRepository.save(newSeason);
-
-        // Desactivar la temporada actual anterior
-        const currentSeason = await this.getCurrentSeason();
-        if (currentSeason && currentSeason.id !== newSeason.id) {
-            currentSeason.isCurrent = false;
-            await this.seasonsRepository.save(currentSeason);
-        }
-
+        const savedSeason = await this.seasonsRepository.save(newSeason);
         return {
-            id: newSeason.id,
-            name: newSeason.name,
-            isCurrent: newSeason.isCurrent,
+            id: savedSeason.id,
+            name: savedSeason.name,
+            isCurrent: true,
         };
     }
 }

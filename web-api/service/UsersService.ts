@@ -109,17 +109,12 @@ export class UsersService {
             createDate: new Date(),
         });
         const newUser = await this.usersRepository.save(user);
-        const stats = this.statsRepository.create({
-            user: newUser,
-            season
+        const newStats = await this.statsRepository.findOneOrFail({
+            where: { user: newUser, season },
+            relations: ["season"]
         });
-        await this.statsRepository.save(stats);
-        newUser.stats = [stats]; // Asignar las stats recién creadas al usuario
-        return createUserDto(
-            newUser,
-            newUser.stats.find((s) => s.season.isCurrent) || null,
-            newUser.subscription
-        );
+        console.log()
+        return createUserDto(newUser, newStats);
     }
 
     async updateUserById(id: number, newData: DeepPartial<User>): Promise<GetUserDto | null> {

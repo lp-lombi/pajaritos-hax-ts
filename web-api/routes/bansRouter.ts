@@ -22,7 +22,8 @@ bansRouter.get("/", async (req, res) => {
                 : undefined;
         const toUserId = req.query.toUserId ? parseInt(req.query.toUserId as string) : undefined;
         const byUserId = req.query.byUserId ? parseInt(req.query.byUserId as string) : undefined;
-        bansService.getAllBans({ isPermanent, isActive, toUserId, byUserId });
+        const bans = await bansService.getAllBans({ isPermanent, isActive, toUserId, byUserId });
+        res.json({ bans });
     } catch (error) {
         console.error("Error al obtener los bans:", error);
         res.status(500).json({ error: "Error al obtener los bans" });
@@ -31,26 +32,24 @@ bansRouter.get("/", async (req, res) => {
 
 bansRouter.post("/", async (req, res) => {
     var { toUserId, toUserName, byUserId, reason, days, ip, auth, isPermanent } = req.body;
-    const startDate = new Date().toISOString();
     if (!days) days = 0;
-    if (!isPermanent) isPermanent = false;
     if (!reason) reason = "";
 
-    if (!ip && !auth) {
+    if (!ip || !auth) {
         res.status(400).json({ error: "Faltan una ip o un auth de haxball a registrar" });
         return;
     }
     try {
         const ban = await bansService.createBan(
             toUserId || null,
-            toUserName,
-            byUserId,
-            reason,
-            startDate,
-            days,
-            ip,
+            toUserName || null,
+            byUserId || null,
+            reason || null,
+            new Date(),
+            days || 0,
+            ip || null,
             auth,
-            isPermanent ? 1 : 0
+            !!isPermanent
         );
         res.json({ ban });
     } catch (error) {
@@ -59,7 +58,7 @@ bansRouter.post("/", async (req, res) => {
     }
 });
 
-bansRouter.put("/:id", async (req, res) => {
+bansRouter.patch("/:id", async (req, res) => {
     const { id } = req.params;
     const newData: Partial<Ban> = {
         isPermanent: req.body.isPermanent,
@@ -69,7 +68,7 @@ bansRouter.put("/:id", async (req, res) => {
         ip: req.body.ip,
         auth: req.body.auth,
     };
-    if (!newData.isPermanent && !newData.isActive && !newData.reason && !newData.days && !newData.ip && !newData.auth) {
+    if (Object.keys(newData).length === 0) {
         res.status(400).json({ error: "No se proporcionaron datos para actualizar" });
         return;
     }

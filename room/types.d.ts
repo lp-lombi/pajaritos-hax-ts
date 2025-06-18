@@ -60,7 +60,7 @@ export type PHUser = {
     startDate: string;
     scoreAnimId: number;
     scoreMessage: string;
-    assistMessage: string;
+    chatColor: number | null;
     joinMessage: string;
     emoji: string;
   };

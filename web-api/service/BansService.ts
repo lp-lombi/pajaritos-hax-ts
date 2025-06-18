@@ -52,26 +52,27 @@ export class BansService {
         toUserName: string,
         byUserId: number,
         reason: string | null,
-        startDate: string,
+        startDate: Date,
         days: number,
         ip: string,
         auth: string,
-        isPermanent: number
+        isPermanent: boolean
     ): Promise<GetBanDto> {
         const newBan = this.bansRepository.create({
             toUser: toUserId ? { id: toUserId } : null,
             toUserName,
             byUser: { id: byUserId },
             reason,
-            startDate: new Date(startDate),
+            startDate,
             days,
             ip,
             auth,
-            isPermanent: Boolean(isPermanent),
+            isPermanent,
+            isActive: true,
         });
-
         const savedBan = await this.bansRepository.save(newBan);
-        return createBanDto(savedBan, savedBan.toUser, savedBan.byUser);
+        const banWithUsers = await this.banQuery().where("ban.id = :id", { id: savedBan.id }).getOneOrFail();
+        return createBanDto(banWithUsers, banWithUsers.toUser, banWithUsers.byUser);
     }
 
     async updateBan(id: number, newData: Omit<DeepPartial<Ban>, "id">): Promise<GetBanDto | null> {

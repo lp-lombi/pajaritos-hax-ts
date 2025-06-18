@@ -26,7 +26,9 @@ authRouter.post("/login", async (req, res) => {
     try {
         const user = await usersRepository.findOneBy({ username });
         if (user) {
+            console.log(user.password)
             const isPasswordValid = bcrypt.compareSync(password, user.password);
+            console.log(`Intento de inicio de sesión # ${user.id} ${user.username} - ${isPasswordValid ? "Éxito" : "Fallo"}`);
             if (isPasswordValid) {
                 const userDto = await usersService.getUserById(user.id);
                 if (!userDto) {
@@ -69,8 +71,7 @@ authRouter.post("/register", async (req, res) => {
             res.status(400).send({ error: "El nombre de usuario ya está en uso" });
             return;
         }
-        const hashedPassword = bcrypt.hashSync(password, 10);
-        const newUser = await usersService.createUser(username, hashedPassword, 0);
+        const newUser = await usersService.createUser(username, password, 0);
 
         const secret = process.env.JWT_SECRET as jwt.Secret;
         const expiration = parseInt(process.env.JWT_EXPIRATION_HOURS as string);

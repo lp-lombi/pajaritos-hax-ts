@@ -23,9 +23,9 @@ export interface StatsDto {
 export interface SubscriptionDto {
     tier: number;
     startDate: string;
+    chatColor: string | null;
     scoreAnimId: number | null;
     scoreMessage: string | null;
-    assistMessage: string | null;
     joinMessage: string | null;
     emoji: string | null;
 }
