@@ -70,10 +70,10 @@ export default function (API: MainReturnType) {
          * Lista de jugadores de la sala (excluye al bot de Haxball).
          */
         get players() {
-            const players: PHPlayer[] = this.room.players.map((p) => {
+            const players = this.room?.players?.map((p) => {
                 const extraData = this.getExtraData(p);
                 return new PHPlayer(p, extraData);
-            }).filter(p => p.id !== 0); // Filtrar el jugador con ID 0 (el bot de Haxball)
+            }).filter(p => p.id !== 0) || []; // Filtrar el jugador con ID 0 (el bot de Haxball)
             return players;
         }
 
