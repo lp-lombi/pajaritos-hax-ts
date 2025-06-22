@@ -16,6 +16,7 @@ export type SetDiscPropertiesParams = Parameters<Room["setDiscProperties"]>[1];
 export type OperationType = MainReturnType["OperationType"][keyof MainReturnType["OperationType"]];
 export type HaxballEvent = MainReturnType["HaxballEvent"][keyof MainReturnType["HaxballEvent"]];
 export type SendChatEvent = MainReturnType["SendChatEvent"][keyof MainReturnType["SendChatEvent"]];
+export type SendInputEvent = MainReturnType["SendInputEvent"][keyof MainReturnType["SendInputEvent"]];
 
 export type GeoLocation = Awaited<ReturnType<Utils["getGeo"]>>;
 export type CreateRoomParams = Parameters<MainReturnType["Room"]["create"]>[0];

@@ -18,6 +18,7 @@ import Orbs from "./plugins/orbs";
 import Announcements from "./plugins/announcements";
 import CustomDisc from "./plugins/customDisc";
 import { version } from "./package.json";
+import Pisadita from "./plugins/pisadita";
 
 const haxball = NodeHaxball();
 global.roomVersion = version;
@@ -44,6 +45,7 @@ export default async function HaxballRoom(roomConfig: PajaritosRoomConfig) {
                     Auth(haxball, commandsData.webApi),
                     Chatbord(haxball),
                     Comba(haxball),
+                    //Pisadita(haxball),
                     Autobot(haxball),
                     Gamemodes(haxball),
                     AdminFeatures(haxball),

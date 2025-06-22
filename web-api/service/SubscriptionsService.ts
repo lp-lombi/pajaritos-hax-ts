@@ -50,6 +50,14 @@ export class SubscriptionsService {
         tier: number,
         startDate: string
     ): Promise<SubscriptionDto> {
+        const existingSubscription = await this.subscriptionQuery()
+            .where("subscription.userId = :userId", { userId })
+            .getOne();
+        if (existingSubscription) {
+            existingSubscription.startDate = new Date(startDate);
+            await this.subscriptionsRepository.save(existingSubscription);
+            return createSubscriptionDto(existingSubscription);
+        }
         const newSubscription = this.subscriptionsRepository.create({
             user: { id: userId },
             tier,

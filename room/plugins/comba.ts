@@ -1,6 +1,7 @@
-import { Disc, MainReturnType } from "shared/types/node-haxball";
+import { MainReturnType } from "shared/types/node-haxball";
 import { CommandsPlugin, PajaritosBaseLib, PHPlayer } from "../types";
 import chroma from "chroma-js";
+import { calcDistance, calcVelocity, calcVelocityBasedGravity } from "./res/physUtils";
 
 export default function (API: MainReturnType) {
     const { AllowFlags, Utils, Plugin } = API;
@@ -34,25 +35,6 @@ export default function (API: MainReturnType) {
                 description: `Plugin de comba y powershot, inspirado en el plugin powershot de ABC`,
                 allowFlags: AllowFlags.CreateRoom,
             });
-        }
-
-        calcDistance(disc1: Disc, disc2: Disc) {
-            let dx = disc1.pos.x - disc2.pos.x;
-            let dy = disc1.pos.y - disc2.pos.y;
-            return Math.sqrt(dx * dx + dy * dy) - disc1.radius - disc2.radius;
-        }
-
-        calcVelocity(x: number, y: number) {
-            return Math.sqrt(x * x + y * y);
-        }
-
-        calcVelocityBasedGravity(velocity: number, ball: Disc) {
-            return (
-                Math.sign(ball.speed.y) * // dirección
-                -0.075 * // valor base
-                (velocity / 6) * // multiplicador por velocidad, un tiro normal suele ser 6
-                this.combaGravityMultiplier // multiplicador constante
-            );
         }
 
         getValue(string: string) {
@@ -98,8 +80,8 @@ export default function (API: MainReturnType) {
                 let targetYSpeed =
                     ball.speed.y * this.combaStrengthMultiplier * this.castStrengthMultiplier;
 
-                let targetVelocity = this.calcVelocity(targetXSpeed, targetYSpeed);
-                let currentVelocity = this.calcVelocity(ball.speed.x, ball.speed.y);
+                let targetVelocity = calcVelocity(targetXSpeed, targetYSpeed);
+                let currentVelocity = calcVelocity(ball.speed.x, ball.speed.y);
                 let finalVelocity = currentVelocity;
 
                 if (targetVelocity > currentVelocity) {
@@ -107,7 +89,11 @@ export default function (API: MainReturnType) {
                     obj.xspeed = targetXSpeed;
                     obj.yspeed = targetYSpeed;
                 }
-                obj.ygravity = this.calcVelocityBasedGravity(finalVelocity, ball);
+                obj.ygravity = calcVelocityBasedGravity(
+                    finalVelocity,
+                    ball,
+                    this.combaGravityMultiplier
+                );
 
                 this.room.setDiscProperties(0, obj);
 
@@ -136,7 +122,7 @@ export default function (API: MainReturnType) {
                 this.isAnyPlayerInHoldingBall = false;
                 this.phLib.players.forEach((p) => {
                     if (p && p.disc) {
-                        if (this.calcDistance(p.disc, ball) < this.holdDistance) {
+                        if (calcDistance(p.disc, ball) < this.holdDistance) {
                             p.comba.holdTicks++;
                         } else {
                             p.comba.holdTicks = 0;
@@ -155,9 +141,10 @@ export default function (API: MainReturnType) {
 
                 Utils.runAfterGameTick(() => {
                     let newGravity = ball.gravity.y * this.combaGravityDecelerationFactor;
-                    let velocityBasedGravity = this.calcVelocityBasedGravity(
-                        this.calcVelocity(ball.speed.x, ball.speed.y),
-                        ball
+                    let velocityBasedGravity = calcVelocityBasedGravity(
+                        calcVelocity(ball.speed.x, ball.speed.y),
+                        ball,
+                        this.combaGravityMultiplier
                     );
 
                     // siempre debe tender a descender la gravedad
