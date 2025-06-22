@@ -1,7 +1,14 @@
 import { HaxballEvent, MainReturnType, OperationType, SendInputEvent } from "@shared/types/node-haxball";
 import { PajaritosBaseLib } from "../types";
 import { MovementDirection } from "../libraries/pajaritosBase";
-import { calcBallDirection, calcDistance as calcDiscsDistance, discretizeDirection, getMovementDirectionWithoutKick as getKickDirection, getOppositeDirection, isKicking } from "./res/physUtils";
+import {
+    calcBallDirection,
+    calcDistance as calcDiscsDistance,
+    discretizeDirection,
+    getMovementDirectionWithoutKick as getKickDirection,
+    getOppositeDirection,
+    isKicking,
+} from "./res/physUtils";
 
 export default function (API: MainReturnType) {
     class PisaditaPlugin extends API.Plugin {
@@ -30,9 +37,7 @@ export default function (API: MainReturnType) {
                 if (!player || !player.disc) return true;
                 const ballDirection = calcBallDirection(player.disc, ball);
                 const discretizedBallDirection = discretizeDirection(ballDirection);
-                console.log(
-                    `Dirección de la pelota desde ${player.name}: ${MovementDirection[discretizedBallDirection]}`
-                );
+                console.log(`Dirección de la pelota desde ${player.name}: ${MovementDirection[discretizedBallDirection]}`);
                 const isMovingOppositeDir =
                     inputEvent.input !== MovementDirection.None &&
                     inputEvent.input !== MovementDirection.KickNone &&
@@ -40,29 +45,28 @@ export default function (API: MainReturnType) {
                 if (!isMovingOppositeDir) return true;
                 console.log("El jugador está moviéndose en dirección opuesta a la pelota");
                 const distanceToBall = calcDiscsDistance(player.disc, ball);
-                console.log(
-                    `Distancia a la pelota: ${distanceToBall.toFixed(2)} unidades`)
-                if (
-                    distanceToBall >= this.minThreshold &&
-                    distanceToBall <= this.maxThreshold
-                ) {
+                console.log(`Distancia a la pelota: ${distanceToBall.toFixed(2)} unidades`);
+                if (distanceToBall >= this.minThreshold && distanceToBall <= this.maxThreshold) {
                     console.log("Pisadita activada");
                     const playerDiscId = this.room.getDiscs().indexOf(player.disc);
+                    const currentPlayerSpeed = player.disc.speed;
 
                     API.Utils.runAfterGameTick(() => {
                         const xspeed = Math.cos(ballDirection) * this.force * -1;
                         const yspeed = Math.sin(ballDirection) * this.force * -1;
 
-                        const updateObj = {
+                        const ballUpdateObj = {
                             xspeed,
                             yspeed,
-                        }
+                        };
+                        const playerUpdateObj = {
+                            xspeed: currentPlayerSpeed.x + xspeed,
+                            yspeed: currentPlayerSpeed.y + yspeed,
+                        };
 
-
-                        console.log(
-                            `Aplicando velocidad a la pelota: xspeed=${xspeed.toFixed(2)}, yspeed=${yspeed.toFixed(2)}`)
-                        this.room.setDiscProperties(0, updateObj);
-                        this.room.setDiscProperties(playerDiscId, updateObj);
+                        console.log(`Aplicando velocidad a la pelota: xspeed=${xspeed.toFixed(2)}, yspeed=${yspeed.toFixed(2)}`);
+                        this.room.setDiscProperties(0, ballUpdateObj);
+                        this.room.setDiscProperties(playerDiscId, playerUpdateObj);
                     }, 1);
                 }
             }
@@ -70,9 +74,7 @@ export default function (API: MainReturnType) {
         };
 
         override initialize = () => {
-            this.phLib = this.room.libraries.find(
-                (l) => (l as any).name === "PajaritosBase"
-            ) as PajaritosBaseLib;
+            this.phLib = this.room.libraries.find((l) => (l as any).name === "PajaritosBase") as PajaritosBaseLib;
             if (!this.phLib) {
                 throw new Error("No se encontró la librería PajaritosBase");
             }
