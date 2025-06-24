@@ -53,7 +53,7 @@ export class StatsService {
         newData: DeepPartial<Stats>
     ): Promise<StatsDto | null> {
         const stats = await this.statsRepository.findOne({
-            where: { user: { id: userId } },
+            where: { user: { id: userId }, season: { isCurrent: true } },
             relations: ["season"],
         });
         if (!stats) return null;
@@ -63,12 +63,9 @@ export class StatsService {
         return createStatsDto(stats);
     }
 
-    async sumStatsByUserId(
-        userId: number,
-        newData: Partial<Stats>
-    ): Promise<StatsDto | null> {
+    async sumStatsByUserId(userId: number, newData: Partial<Stats>): Promise<StatsDto | null> {
         const stats = await this.statsRepository.findOne({
-            where: { user: { id: userId } },
+            where: { user: { id: userId }, season: { isCurrent: true } },
             relations: ["season"],
         });
         if (!stats) return null;
