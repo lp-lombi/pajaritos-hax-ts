@@ -55,8 +55,10 @@ export class StatsService {
         const stats = await this.statsRepository.findOne({
             where: { user: { id: userId }, season: { isCurrent: true } },
             relations: ["season"],
+        }) || this.statsRepository.create({
+            user: { id: userId },
+            season: { isCurrent: true },
         });
-        if (!stats) return null;
 
         Object.assign(stats, newData);
         await this.statsRepository.save(stats);
@@ -67,8 +69,10 @@ export class StatsService {
         const stats = await this.statsRepository.findOne({
             where: { user: { id: userId }, season: { isCurrent: true } },
             relations: ["season"],
+        }) || this.statsRepository.create({
+            user: { id: userId },
+            season: { isCurrent: true },
         });
-        if (!stats) return null;
 
         stats.score += newData.score || 0;
         stats.assists += newData.assists || 0;
