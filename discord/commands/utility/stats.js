@@ -4,25 +4,37 @@ const { webApi } = require("../../config.json");
 module.exports = {
     data: new SlashCommandBuilder().setName("stats").setDescription("Muestra los stats."),
     async execute(interaction) {
-        if (webApi && webApi.url && webApi.key) {
-            fetch(webApi.url + "/users/stats/all", {
+        if (webApi && webApi.url && global.apiKey) {
+            fetch(webApi.url + "/users?stats=true", {
                 headers: {
-                    "x-api-key": webApi.key,
+                    "x-api-key": global.apiKey,
                 },
             })
                 .then(async (res) => {
                     if (res.ok) {
                         res.json().then(async (data) => {
-                            if (data.stats && data.stats.length > 0) {
-                                console.log(data);
+                            console.log(data)
+                            if (data.users && data.users.length > 0) {
 
-                                data.stats.sort((a, b) => b.rating - a.rating);
+                                const users = data.users.sort((a, b) => b.stats.rating - a.stats.rating);
+                                const maxScorer = users.reduce((prev, current) =>
+                                    prev.stats.score > current.stats.score ? prev : current
+                                );
+                                const maxAssister = users.reduce((prev, current) =>
+                                    prev.stats.assists > current.stats.assists ? prev : current
+                                );
+                                const maxWinrate = users.reduce((prev, current) => {
+                                    const prevWinrate = prev.stats.wins / prev.stats.matches;
+                                    const currentWinrate = current.stats.wins / current.stats.matches;
+                                    return prevWinrate > currentWinrate ? prev : current;
+                                });
+                                
 
                                 let top = 15;
                                 let statsStr = "";
-                                for (let i = 1; i < top && i < data.stats.length; i++) {
-                                    let stat = data.stats[i];
-                                    statsStr += `${i + 1}. **${stat.username}:** - ${stat.rating}\n`;
+                                for (let i = 1; i < top && i < users.length; i++) {
+                                    let u = users[i];
+                                    statsStr += `${i + 1}. **${u.username}:** - ${u.stats.rating}\n`;
                                 }
 
                                 const embed = new EmbedBuilder()
@@ -31,23 +43,23 @@ module.exports = {
                                     .addFields(
                                         { name: "\u200B", value: "\u200B" },
                                         {
-                                            name: `1. ${data.stats[0].username} - ${data.stats[0].rating}`,
+                                            name: `1. ${users[0].username} - ${users[0].stats.rating}`,
                                             value: statsStr,
                                         },
                                         { name: "\u200B", value: "\u200B" },
                                         {
                                             name: "Máximo goleador",
-                                            value: `${data.maxScorer.username} (${data.maxScorer.score})`,
+                                            value: `${maxScorer.username} (${maxScorer.stats.score})`,
                                             inline: true,
                                         },
                                         {
                                             name: "Máximo asistidor",
-                                            value: `${data.maxAssister.username} (${data.maxAssister.assists})`,
+                                            value: `${maxAssister.username} (${maxAssister.stats.assists})`,
                                             inline: true,
                                         },
                                         {
                                             name: "Mayor winrate",
-                                            value: `${data.maxWinrate?.username} (${data.maxWinrate?.winrate.toFixed(
+                                            value: `${maxWinrate.username} (${(maxWinrate.stats.wins / maxWinrate.stats.matches)?.toFixed(
                                                 3
                                             )})`,
                                             inline: true,

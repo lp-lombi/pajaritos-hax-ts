@@ -47,6 +47,27 @@ function listen(app: Express, port: number, attempts: number) {
         });
 }
 
+const sendStatusInterval = setInterval(() => {
+    if (global.room && global.room.players && global.room.password !== "") {
+        fetch(`${global.webApi.url}/rooms`, {
+            method: "POST",
+            headers: {
+                "x-api-key": global.webApi.key,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                name: global.room.name,
+                link: global.room.link,
+                players: global.room.players.length,
+                maxPlayers: global.room.maxPlayerCount,
+            }),
+        }).catch((err) => {
+            console.log(err);
+        });
+    }
+}, 15000);
+
+
 async function init() {
     try {
         console.log("Iniciando servidor Pajaritos\n");

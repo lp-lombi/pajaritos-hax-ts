@@ -1,10 +1,10 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { Client, Collection, Events, GatewayIntentBits } = require("discord.js");
-const { webApi } = require("./config.json");
+const { webApi, discordApiToken } = require("./config.json");
 
 async function getApiKey() {
-    const res = await fetch(webApi.url + "/auth/api-key", {
+    const loginRes = await fetch(webApi.url + "/auth/login", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -13,12 +13,24 @@ async function getApiKey() {
             username: webApi.user.username,
             password: webApi.user.password,
         }),
-    }); 
-    if (res.ok) {
-        const data = await res.json();
-        return data.key;
+    });
+    if (loginRes.ok) {
+        const { token } = await loginRes.json();
+        const apiKeyRes = await fetch(webApi.url + "/auth/api-key", {
+            headers: {
+                Authorization: token,
+            },
+        });
+        if (apiKeyRes.ok) {
+            const { apiKey } = await apiKeyRes.json();
+            if (apiKey) {
+                return apiKey;
+            } else {
+                throw new Error("No se pudo obtener la clave API.");
+            }
+        }
     } else {
-        throw new Error("No se pudo obtener la clave API: " + res.statusText);
+        throw new Error("No se pudo obtener la clave API: " + loginRes.statusText);
     }
 }
 
@@ -91,7 +103,7 @@ async function init() {
         }
     };
 
-    client.login(token);
+    client.login(discordApiToken);
 }
 
-init()
+init();

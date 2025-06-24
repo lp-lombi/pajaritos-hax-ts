@@ -1,17 +1,15 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const { webApi } = require("../../config.json");
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("link")
         .setDescription("Muestra los links de las salas abiertas."),
     async execute(interaction) {
-
-
-
-        if (webApi && webApi.url && webApi.key) {
-            fetch(webApi.url + "/rooms/all", {
+        if (webApi && webApi.url && global.apiKey) {
+            fetch(webApi.url + "/rooms", {
                 headers: {
-                    "x-api-key": webApi.key,
+                    "x-api-key": global.apiKey,
                 },
             })
                 .then((res) => {
