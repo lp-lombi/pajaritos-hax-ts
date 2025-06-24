@@ -4,6 +4,7 @@ import { Season } from "../entities/Season";
 import { DeepPartial } from "typeorm";
 import { StatsDto } from "@shared/types/dtos/misc.dto";
 import { createStatsDto } from "../utils/dto-mappers";
+import { User } from "../entities/User";
 
 export class StatsService {
     private static instance: StatsService;
@@ -48,36 +49,36 @@ export class StatsService {
         return createStatsDto(stats);
     }
 
-    async updateStatsByUserId(
-        userId: number,
-        newData: DeepPartial<Stats>
-    ): Promise<StatsDto | null> {
-        const stats = await this.statsRepository.findOne({
-            where: { user: { id: userId }, season: { isCurrent: true } },
-            relations: ["season"],
-        }) || this.statsRepository.create({
-            user: { id: userId },
-            season: { isCurrent: true },
-        });
-
-        Object.assign(stats, newData);
-        await this.statsRepository.save(stats);
-        return createStatsDto(stats);
-    }
 
     async sumStatsByUserId(userId: number, newData: Partial<Stats>): Promise<StatsDto | null> {
-        const stats = await this.statsRepository.findOne({
-            where: { user: { id: userId }, season: { isCurrent: true } },
-            relations: ["season"],
-        }) || this.statsRepository.create({
-            user: { id: userId },
-            season: { isCurrent: true },
+        const user = await AppDataSource.getRepository(User).findOneBy({ id: userId });
+        if (!user) {
+            console.error(`Usuario con ID ${userId} no encontrado.`);
+            return null;
+        }
+        const currentSeason = await this.seasonsRepository.findOneOrFail({
+            where: { isCurrent: true },
         });
+        const stats =
+            (await this.statsRepository.findOne({
+                where: { user: { id: userId }, season: { isCurrent: true } },
+                relations: ["season"],
+            })) ||
+            this.statsRepository.create({
+                user,
+                season: currentSeason,
+                score: 0,
+                assists: 0,
+                matches: 0,
+                wins: 0,
+            });
 
         stats.score += newData.score || 0;
         stats.assists += newData.assists || 0;
         stats.matches += newData.matches || 0;
         stats.wins += newData.wins || 0;
+        console.log(stats);
+
         await this.statsRepository.save(stats);
         return createStatsDto(stats);
     }

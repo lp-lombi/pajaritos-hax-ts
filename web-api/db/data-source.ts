@@ -80,14 +80,15 @@ export async function defaultDbValues() {
         console.log("Propiedades de suscripción predeterminadas insertadas:", propertiesToInsert);
     }
 
-    const usersService = UsersService.getInstance();
-    const rootUser = await usersService.userQuery({ byRole: 3 }).getOne();
+    const usersRepository = AppDataSource.getRepository(User);
+    const rootUser = await usersRepository.findOneBy({ role: 3 });
     if (!rootUser) {
-        const newRootUser = await usersService.createUser(
-            process.env["ROOT_USERNAME"]!,
-            process.env["ROOT_PASSWORD"]!,
-            3
-        );
+        const newRootUser = usersRepository.create({
+            username: process.env["ROOT_USERNAME"]!,
+            password: process.env["ROOT_PASSWORD"]!,
+            role: 3,
+        });
+        await usersRepository.save(newRootUser);
         console.log("Usuario root creado:", newRootUser);
     }
 }
