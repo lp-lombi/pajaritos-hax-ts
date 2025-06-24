@@ -49,6 +49,9 @@ export default function (API: MainReturnType) {
         get isAdmin() {
             return this.player.isAdmin;
         }
+        get default() {
+            return this.player
+        }
         get movementDirection() {
             return ((this.player as any).WD || 0) as MovementDirection;
         }

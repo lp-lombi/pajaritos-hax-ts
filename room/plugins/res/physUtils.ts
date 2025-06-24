@@ -1,5 +1,4 @@
 import { Disc, MovableDisc } from "@shared/types/node-haxball";
-import { PHPlayer } from "../../types";
 import { MovementDirection } from "../../libraries/pajaritosBase";
 
 export function calcDistance(disc1: Disc, disc2: Disc) {
@@ -8,7 +7,7 @@ export function calcDistance(disc1: Disc, disc2: Disc) {
     return Math.sqrt(dx * dx + dy * dy) - disc1.radius - disc2.radius;
 }
 
-export function calcVelocity(x: number, y: number) {
+export function calcMagnitude(x: number, y: number) {
     return Math.sqrt(x * x + y * y);
 }
 
@@ -99,6 +98,7 @@ export function getMovementDirectionWithoutKick(
     direction: MovementDirection
 ): MovementDirection {
     switch (direction) {
+        case MovementDirection.KickNone: return MovementDirection.None;
         case MovementDirection.KickUp: return MovementDirection.Up;
         case MovementDirection.KickDown: return MovementDirection.Down;
         case MovementDirection.KickLeft: return MovementDirection.Left;

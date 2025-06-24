@@ -54,6 +54,7 @@ export default function (API: MainReturnType) {
                                     this.room.fakeSendPlayerChat("!autobot equipos 4", msg.byId);
                                     this.room.fakeSendPlayerChat("!comba preset 2", msg.byId);
                                     this.room.fakeSendPlayerChat("!autobot afk 15 move", msg.byId);
+                                    this.room.setScoreLimit(0);
                                 } else if (gamemode === Gamemodes.X5) {
                                     this.commands.chat.announce(
                                         "Cambiando el modo de juego a Futsal x5",
@@ -63,6 +64,7 @@ export default function (API: MainReturnType) {
                                     this.room.fakeSendPlayerChat("!autobot equipos 5", msg.byId);
                                     this.room.fakeSendPlayerChat("!comba preset 3", msg.byId);
                                     this.room.fakeSendPlayerChat("!autobot afk 15 move", msg.byId);
+                                    this.room.setScoreLimit(0);
                                 } else if (gamemode === Gamemodes.Freeroam) {
                                     this.commands.chat.announce(
                                         "Cambiando el modo de juego a Juegan Todos",
@@ -72,6 +74,7 @@ export default function (API: MainReturnType) {
                                     this.room.fakeSendPlayerChat("!autobot equipos 15", msg.byId);
                                     this.room.fakeSendPlayerChat("!comba preset 4", msg.byId);
                                     this.room.fakeSendPlayerChat("!autobot afk 25 kick", msg.byId);
+                                    this.room.setScoreLimit(0);
                                 }
                             } else {
                                 this.commands.chat.announce(

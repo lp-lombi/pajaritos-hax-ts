@@ -1,9 +1,15 @@
-import { HaxballEvent, MainReturnType, OperationType, SendInputEvent } from "@shared/types/node-haxball";
-import { PajaritosBaseLib } from "../types";
+import {
+    HaxballEvent,
+    MainReturnType,
+    OperationType,
+    SendInputEvent,
+} from "@shared/types/node-haxball";
+import { CommandsPlugin, PajaritosBaseLib } from "../types";
 import { MovementDirection } from "../libraries/pajaritosBase";
 import {
     calcBallDirection,
     calcDistance as calcDiscsDistance,
+    calcMagnitude,
     discretizeDirection,
     getMovementDirectionWithoutKick as getKickDirection,
     getOppositeDirection,
@@ -12,10 +18,14 @@ import {
 
 export default function (API: MainReturnType) {
     class PisaditaPlugin extends API.Plugin {
+        commands!: CommandsPlugin;
         phLib!: PajaritosBaseLib;
-        minThreshold = 4;
-        maxThreshold = 15;
-        force = 1;
+        active: boolean = true;
+        minThreshold = 3;
+        maxThreshold = 18;
+        maxSpeed = 2.5;
+        force = 2.5;
+        preventKickPlayerIds: number[] = [];
 
         constructor() {
             super("lmbPisadita", true, {
@@ -27,57 +37,83 @@ export default function (API: MainReturnType) {
         }
 
         override onOperationReceived = (type: OperationType, event: HaxballEvent) => {
-            if (type === 3) {
-                console.log("\nEvento de entrada recibido:", event);
+            if (type === 3 && this.active) {
                 const inputEvent = event as SendInputEvent;
-                if (!isKicking(inputEvent.input)) return true;
-                const ball = this.room.getBall();
-                if (!ball) return true;
+                if (!isKicking(inputEvent.input)) {
+                    this.preventKickPlayerIds = this.preventKickPlayerIds.filter(
+                        (id) => id !== inputEvent.byId
+                    );
+                    return true;
+                }
+                const ball = this.room.getBall(true);
                 const player = this.phLib.getPlayer(inputEvent.byId);
-                if (!player || !player.disc) return true;
+                if (!player || !player.disc || !ball) return true;
+                if (this.preventKickPlayerIds.includes(player.id)) {
+                    (event as SendInputEvent).input = getKickDirection(inputEvent.input);
+                    return true;
+                }
                 const ballDirection = calcBallDirection(player.disc, ball);
                 const discretizedBallDirection = discretizeDirection(ballDirection);
-                console.log(`Dirección de la pelota desde ${player.name}: ${MovementDirection[discretizedBallDirection]}`);
                 const isMovingOppositeDir =
                     inputEvent.input !== MovementDirection.None &&
                     inputEvent.input !== MovementDirection.KickNone &&
-                    getOppositeDirection(getKickDirection(inputEvent.input)) === discretizedBallDirection;
+                    getOppositeDirection(getKickDirection(inputEvent.input)) ===
+                        discretizedBallDirection;
                 if (!isMovingOppositeDir) return true;
-                console.log("El jugador está moviéndose en dirección opuesta a la pelota");
                 const distanceToBall = calcDiscsDistance(player.disc, ball);
-                console.log(`Distancia a la pelota: ${distanceToBall.toFixed(2)} unidades`);
                 if (distanceToBall >= this.minThreshold && distanceToBall <= this.maxThreshold) {
-                    console.log("Pisadita activada");
-                    const playerDiscId = this.room.getDiscs().indexOf(player.disc);
-                    const currentPlayerSpeed = player.disc.speed;
+                    const currentBallSpeed = ball.speed;
 
-                    API.Utils.runAfterGameTick(() => {
-                        const xspeed = Math.cos(ballDirection) * this.force * -1;
-                        const yspeed = Math.sin(ballDirection) * this.force * -1;
+                    const xspeed = Math.cos(ballDirection) * this.force * -1;
+                    const yspeed = Math.sin(ballDirection) * this.force * -1;
 
-                        const ballUpdateObj = {
-                            xspeed,
-                            yspeed,
-                        };
-                        const playerUpdateObj = {
-                            xspeed: currentPlayerSpeed.x + xspeed,
-                            yspeed: currentPlayerSpeed.y + yspeed,
-                        };
+                    const ballUpdateObj = {
+                        xspeed: currentBallSpeed.x + xspeed,
+                        yspeed: currentBallSpeed.y + yspeed,
+                    };
+                    const targetVelocity = calcMagnitude(ballUpdateObj.xspeed, ballUpdateObj.yspeed);
+                    if (targetVelocity > 3) {
+                        const normalizedX = ballUpdateObj.xspeed / targetVelocity;
+                        const normalizedY = ballUpdateObj.yspeed / targetVelocity;
+                        ballUpdateObj.xspeed = normalizedX * this.maxSpeed;
+                        ballUpdateObj.yspeed = normalizedY * this.maxSpeed;
+                    }
+                    this.room.setDiscProperties(0, ballUpdateObj);
+                    this.preventKickPlayerIds.push(player.id);
 
-                        console.log(`Aplicando velocidad a la pelota: xspeed=${xspeed.toFixed(2)}, yspeed=${yspeed.toFixed(2)}`);
-                        this.room.setDiscProperties(0, ballUpdateObj);
-                        this.room.setDiscProperties(playerDiscId, playerUpdateObj);
-                    }, 1);
+                    // transforma el evento de entrada para que no se lo considere un kick
+                    (event as SendInputEvent).input = getKickDirection(inputEvent.input);
                 }
             }
             return true;
         };
 
         override initialize = () => {
-            this.phLib = this.room.libraries.find((l) => (l as any).name === "PajaritosBase") as PajaritosBaseLib;
-            if (!this.phLib) {
-                throw new Error("No se encontró la librería PajaritosBase");
+            this.phLib = this.room.libraries.find(
+                (l) => (l as any).name === "PajaritosBase"
+            ) as PajaritosBaseLib;
+            this.commands = this.room.plugins.find(
+                (p) => (p as any).name === "lmbCommands"
+            ) as CommandsPlugin;
+            if (!this.phLib || !this.commands) {
+                throw new Error("No se encontró la librería PajaritosBase o el plugin Commands");
             }
+            this.commands.registerCommand(
+                "!",
+                "pisadita",
+                (msg, args) => {
+                    if (args.length === 0) {
+                        this.active = !this.active;
+                        this.commands.chat.announce(
+                            `Pisadita ${this.active ? "activada" : "desactivada"}`,
+                            msg.byId
+                        );
+                    }
+                },
+                "Activa o desactiva la pisadita",
+                true,
+                2
+            );
         };
     }
     return new PisaditaPlugin();

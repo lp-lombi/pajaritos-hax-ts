@@ -146,6 +146,7 @@ export default function (API: MainReturnType) {
         }
 
         checkTeams() {
+            if (!this.active || !this.room.gameState) return;
             const spectators = this.spectators.filter((p) => p.id > 0);
             const blueTeamPlayers = this.blueTeamPlayers;
             const redTeamPlayers = this.redTeamPlayers;
@@ -231,7 +232,10 @@ export default function (API: MainReturnType) {
                     }
                 });
 
+                let replaceableAmount = spectators.length;
                 loserPlayersIds.forEach((playerId) => {
+                    if (replaceableAmount <= 0) return;
+                    replaceableAmount--;
                     this.room.setPlayerTeam(playerId, 0);
                 });
 

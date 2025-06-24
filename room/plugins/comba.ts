@@ -1,7 +1,7 @@
 import { MainReturnType } from "shared/types/node-haxball";
 import { CommandsPlugin, PajaritosBaseLib, PHPlayer } from "../types";
 import chroma from "chroma-js";
-import { calcDistance, calcVelocity, calcVelocityBasedGravity } from "./res/physUtils";
+import { calcDistance, calcMagnitude, calcVelocityBasedGravity } from "./res/physUtils";
 
 export default function (API: MainReturnType) {
     const { AllowFlags, Utils, Plugin } = API;
@@ -80,8 +80,8 @@ export default function (API: MainReturnType) {
                 let targetYSpeed =
                     ball.speed.y * this.combaStrengthMultiplier * this.castStrengthMultiplier;
 
-                let targetVelocity = calcVelocity(targetXSpeed, targetYSpeed);
-                let currentVelocity = calcVelocity(ball.speed.x, ball.speed.y);
+                let targetVelocity = calcMagnitude(targetXSpeed, targetYSpeed);
+                let currentVelocity = calcMagnitude(ball.speed.x, ball.speed.y);
                 let finalVelocity = currentVelocity;
 
                 if (targetVelocity > currentVelocity) {
@@ -142,7 +142,7 @@ export default function (API: MainReturnType) {
                 Utils.runAfterGameTick(() => {
                     let newGravity = ball.gravity.y * this.combaGravityDecelerationFactor;
                     let velocityBasedGravity = calcVelocityBasedGravity(
-                        calcVelocity(ball.speed.x, ball.speed.y),
+                        calcMagnitude(ball.speed.x, ball.speed.y),
                         ball,
                         this.combaGravityMultiplier
                     );

@@ -45,7 +45,7 @@ export default async function HaxballRoom(roomConfig: PajaritosRoomConfig) {
                     Auth(haxball, commandsData.webApi),
                     Chatbord(haxball),
                     Comba(haxball),
-                    //Pisadita(haxball),
+                    Pisadita(haxball),
                     Autobot(haxball),
                     Gamemodes(haxball),
                     AdminFeatures(haxball),
