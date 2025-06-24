@@ -47,8 +47,11 @@ export class UsersService {
         if (filter.byRole !== undefined) {
             query.andWhere("user.role = :role", { role: filter.byRole });
         }
+
         if (filter.bySeasonId !== undefined) {
             query.andWhere("season.id = :seasonId", { seasonId: filter.bySeasonId });
+        } else {
+            query.andWhere("season.isCurrent = true");
         }
         return query;
     }
