@@ -88,10 +88,10 @@ usersRouter.post("/:id/stats/sum", async (req, res) => {
         return;
     }
     const updateObj: Partial<Stats> = {};
-    if (score) updateObj.score = score;
-    if (assists) updateObj.assists = assists;
-    if (matches) updateObj.matches = matches;
-    if (wins) updateObj.wins = wins;
+    if (!isNaN(score)) updateObj.score = parseInt(score);
+    if (!isNaN(assists)) updateObj.assists = parseInt(assists);
+    if (!isNaN(matches)) updateObj.matches = parseInt(matches);
+    if (!isNaN(wins)) updateObj.wins = parseInt(wins);
     const updatedUser = await statsService.sumStatsByUserId(parseInt(req.params.id), updateObj);
     if (!updatedUser) {
         res.status(404).send({ error: "Usuario no encontrado" });
