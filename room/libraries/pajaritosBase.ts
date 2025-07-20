@@ -1,31 +1,5 @@
 import { HaxballEvent, MainReturnType, Player } from "shared/types/node-haxball";
-import { PHExtraPlayerData } from "../types";
-
-/**
- * Direcciones de movimiento del jugador. 
- * Haxball toma el movimiento mientras se patea como uno diferente,
- * por lo cual va a ser distinto por ejemplo moverse a la izquierda que moverse pateando a la izquierda.
- */
-export enum MovementDirection {
-    None = 0,
-    Up = 1,
-    UpRight = 9,
-    Right = 8,
-    DownRight = 10,
-    Down = 2,
-    DownLeft = 6,
-    Left = 4,
-    KickNone = 16,
-    UpLeft = 5,
-    KickUp = 17,
-    KickUpRight = 25,
-    KickRight = 24,
-    KickDownRight = 26,
-    KickDown = 18,
-    KickDownLeft = 22,
-    KickLeft = 20,
-    KickUpLeft = 21,
-}
+import { Input, PHExtraPlayerData } from "../types";
 
 export default function (API: MainReturnType) {
     class PHPlayer {
@@ -53,7 +27,7 @@ export default function (API: MainReturnType) {
             return this.player
         }
         get movementDirection() {
-            return ((this.player as any).WD || 0) as MovementDirection;
+            return ((this.player as any).WD || 0) as Input;
         }
         /** El objeto que contiene la información del usuario registrado. En caso de no estar registrado, se genera un objeto con ID nulo y rol por defecto*/
         get user() {

@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { DataSource, DeepPartial } from "typeorm";
+import { DataSource } from "typeorm";
 import path from "path";
 import { User } from "../entities/User";
 import { Season } from "../entities/Season";
@@ -8,7 +8,6 @@ import { Ban } from "../entities/Ban";
 import { Subscription } from "../entities/Subscription/Subscription";
 import { SubscriptionProperty } from "../entities/Subscription/SubscriptionProperty";
 import { SubscriptionPropertyType } from "../entities/Subscription/SubscriptionPropertyType";
-import { UsersService } from "../service/UsersService";
 
 export const AppDataSource = new DataSource({
     type: "sqlite",

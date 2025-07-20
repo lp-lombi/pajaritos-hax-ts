@@ -86,6 +86,28 @@ export interface PlayerModifier {
   discProperties: Object;
 }
 
+/**
+ * Posibles entradas de dirección del jugador. Las combinaciones de estas entradas
+ * dan como resultado enteros que representan cualquier posible dirección.
+ */
+export enum Input {
+    None = 0,
+    Up = 1,
+    Down = 2,
+    Left = 4,
+    Right = 8,
+    Kick = 16,
+}
+
+export const InputOpposites: Record<Input, Input> = {
+    [Input.None]: Input.Kick,
+    [Input.Up]: Input.Down,
+    [Input.Down]: Input.Up,
+    [Input.Left]: Input.Right,
+    [Input.Right]: Input.Left,
+    [Input.Kick]: Input.None
+}
+
 export type PajaritosBaseLib = ReturnType<typeof PajaritosBaseLib>;
 export type PHPlayer = PajaritosBaseLib["players"][0];
 
