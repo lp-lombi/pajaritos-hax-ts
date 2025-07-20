@@ -1,5 +1,5 @@
 import { Disc, MovableDisc } from "@shared/types/node-haxball";
-import { Input } from "../../types";
+import { Input, InputOpposites } from "../../types";
 export function calcDistance(disc1: Disc, disc2: Disc) {
     let dx = disc1.pos.x - disc2.pos.x;
     let dy = disc1.pos.y - disc2.pos.y;
@@ -64,7 +64,7 @@ export function getPressedKeys(inputValue: number): Input[] {
 }
 
 export function getOppositeDirection(direction: Input): Input {
-    
+    return InputOpposites[direction] || Input.None;
 }
 
 

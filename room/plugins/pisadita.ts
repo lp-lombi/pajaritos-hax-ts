@@ -56,7 +56,7 @@ export default function (API: MainReturnType) {
                 const discretizedBallDirection = discretizeDirection(ballDirection);
                 const isMovingOppositeDir =
                     inputEvent.input !== Input.None &&
-                    inputEvent.input !== Input.KickNone &&
+                    inputEvent.input !== Input.Kick &&
                     getOppositeDirection(getDirectionOnly(inputEvent.input)) ===
                         discretizedBallDirection;
                 if (!isMovingOppositeDir) return true;
