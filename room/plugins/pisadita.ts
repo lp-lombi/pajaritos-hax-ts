@@ -19,7 +19,7 @@ export default function (API: MainReturnType) {
     class PisaditaPlugin extends API.Plugin {
         commands!: CommandsPlugin;
         phLib!: PajaritosBaseLib;
-        active: boolean = true;
+        active: boolean = false;
         minThreshold = 3;
         maxThreshold = 18;
         maxSpeed = 2.5;
