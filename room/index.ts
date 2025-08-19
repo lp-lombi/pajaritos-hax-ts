@@ -19,6 +19,7 @@ import Announcements from "./plugins/announcements";
 import CustomDisc from "./plugins/customDisc";
 import { version } from "./package.json";
 import Pisadita from "./plugins/pisadita";
+import dwhReplays from "./plugins/dwh-replays";
 
 const haxball = NodeHaxball();
 global.roomVersion = version;
@@ -35,7 +36,7 @@ export default async function HaxballRoom(roomConfig: PajaritosRoomConfig) {
             }
             const commandsDb = await initDb();
             const commandsData = {
-                discord: "https://discord.gg/Y5ZWvjftP6",
+                discord: "https://discord.gg/W4thtY5exQ",
                 webApi: roomConfig.webApi,
             };
             haxball.Room.create(roomConfig.createParams as CreateRoomParams, {
@@ -56,6 +57,9 @@ export default async function HaxballRoom(roomConfig: PajaritosRoomConfig) {
                     Orbs(haxball),
                     Announcements(haxball),
                     CustomDisc(haxball),
+
+                    // externos
+                    dwhReplays(haxball)
                 ],
                 storage: {
                     player_name: roomConfig.botName || "Cristo",

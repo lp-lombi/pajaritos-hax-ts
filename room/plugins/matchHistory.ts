@@ -113,7 +113,7 @@ export class MatchHistory {
     }
     getTeamPossession(teamId: number) {
         const teamEvents = this.getEvents(null, null, teamId);
-        return teamEvents.length / this.events.length;
+        return teamEvents.length / this.events.length || 0;
     }
 
     getHistoryBeforeLastGoal() {
@@ -140,7 +140,8 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
             public redWins = 0,
             public blueWins = 0,
             public previousMatchesHistory = new MatchHistory(),
-            public currentMatchHistory = new MatchHistory()
+            public currentMatchHistory = new MatchHistory(),
+            public lastMatchHistory: MatchHistory | null = null
         ) {
             super("lmbMatchHistory", true, {
                 description: "Historial de eventos de los partidos de la sesión.",
@@ -387,13 +388,25 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
         }
 
         fileMatchHistory = () => {
+            // Se guarda la posesión de cada equipo
+            const redPossession = this.currentMatchHistory.getTeamPossession(1);
+            const bluePossession = this.currentMatchHistory.getTeamPossession(2);
+            this.currentMatchHistory.getTeamPossession = (teamId: number) => {
+                if (teamId === 1) return redPossession;
+                if (teamId === 2) return bluePossession;
+                return 0;
+            };
+
             this.currentMatchHistory.registerEvent(0, 0, 0, MatchHistoryEventType.GameEnd);
+
             // Se descartan los eventos de touch ball debido a que pueden ser demasiados y ya no son de utilidad
             this.previousMatchesHistory.events.push(
                 ...this.currentMatchHistory.events.filter((event) => {
                     return event?.type !== MatchHistoryEventType.TouchBall;
                 })
             );
+
+            this.lastMatchHistory = this.currentMatchHistory;
             this.currentMatchHistory = new MatchHistory();
         }
 
