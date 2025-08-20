@@ -59,7 +59,7 @@ export default async function HaxballRoom(roomConfig: PajaritosRoomConfig) {
                     CustomDisc(haxball),
 
                     // externos
-                    dwhReplays(haxball)
+                    dwhReplays(haxball, roomConfig.discord?.whReplaysUrl as string),
                 ],
                 storage: {
                     player_name: roomConfig.botName || "Cristo",

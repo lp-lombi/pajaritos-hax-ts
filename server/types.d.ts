@@ -14,6 +14,8 @@ export interface RoomServerUser {
  * El usuario y contraseña habilitados para la API web deben tener permisos de root
  */
 // TODO: Renombrar y reestrucutrar ya que no solo es para room sino para server
+
+// TODO: Me la re viví, debería ser un solo tipo con el archivo y listo
 export interface PajaritosRoomConfigFile {
   createParams: CreateRoomParamsOptionalGeo;
   botName?: string;
@@ -24,10 +26,14 @@ export interface PajaritosRoomConfigFile {
       password: string;
     }
   };
+  discord: {
+    whReplaysUrl: string;
+  }
   jwtSecret: string;
 }
 
 declare global {
+    var roomConfig: PajaritosRoomConfig;
     var webApi: WebApiData;
     var geo: GeoLocation | undefined;
     var jwtSecret: string;

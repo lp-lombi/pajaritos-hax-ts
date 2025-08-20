@@ -2,18 +2,13 @@ import { MainReturnType } from "@shared/types/node-haxball";
 import { WebhookClient } from "discord.js";
 import { MatchHistoryPlugin } from "../types";
 
-
-//TODO: Momentaneamente se ajusta de forma manual
-const WH_URL = "";
-
-const whClient = new WebhookClient({
-    url: WH_URL
-})
-
-export default function (API: MainReturnType) {
+export default function (API: MainReturnType, whUrl: string) {
     class DWHReplays extends API.Plugin {
         hist!: MatchHistoryPlugin;
-        constructor(private isRecording = false) {
+        constructor(
+            private isRecording = false,
+            private whClient = new WebhookClient({ url: whUrl })
+        ) {
             super("lmbDWHReplays", true, {
                 version: "0.1",
                 author: "lombi",
@@ -33,46 +28,55 @@ export default function (API: MainReturnType) {
                 date.getDate()
             )} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 
-            console.log(this.hist.currentMatchHistory.getTeamPossession(1))
+            console.log(this.hist.currentMatchHistory.getTeamPossession(1));
 
-            await whClient.send({
+            await this.whClient.send({
                 content: "## PH Replay 🕊️",
                 embeds: [
                     {
                         title: "Información del partido",
                         fields: [
                             {
-                                name: "Jugadores",
-                                value:
-                                    this.room.players
-                                        .filter((p) => p.id > 0)
-                                        .map((p) => p.name)
-                                        .join("  -  ") || "Ninguno",
-                                inline: false,
-                            },
-                            {
-                                name: "Estadística\n",
-                                value: "Resultado\n\nPosesión",
+                                name: "🔴 Red\n",
+                                value: `
+                                    Goles: ${this.room.redScore || 0}\n
+                                    Posesión: ${
+                                        this.hist.lastMatchHistory
+                                            ? (
+                                                  this.hist.lastMatchHistory.getTeamPossession(1) *
+                                                  100
+                                              ).toFixed(2) + "%"
+                                            : "N/A"
+                                    }\n
+                                    Jugadores: ${
+                                        this.room.players
+                                            .filter((p) => p.id > 0)
+                                            .filter((p) => p.team.id === 1)
+                                            .map((p) => p.name)
+                                            .join("  -  ") || "Ninguno"
+                                    }`,
                                 inline: true,
                             },
                             {
-                                name: "🔴 Rojo\n",
-                                value:
-                                    this.room.redScore +
-                                    "\n\n" +
-                                    (this.hist.lastMatchHistory
-                                        ? this.hist.lastMatchHistory.getTeamPossession(1) * 100 + "%"
-                                        : "N/A") ,
-                                inline: true,
-                            },
-                            {
-                                name: "🔵 Azul\n",
-                                value:
-                                    this.room.blueScore +
-                                    "\n\n" +
-                                    (this.hist.lastMatchHistory
-                                        ? this.hist.lastMatchHistory.getTeamPossession(2) * 100 + "%"
-                                        : "N/A"),
+                                name: "🔵 Blue\n",
+                                value: `
+                                    Goles: ${this.room.blueScore || 0}\n
+                                    Posesión: ${
+                                        this.hist.lastMatchHistory
+                                            ? (
+                                                  this.hist.lastMatchHistory.getTeamPossession(2) *
+                                                  100
+                                              ).toFixed(2) + "%"
+                                            : "N/A"
+                                    }\n
+                                    Jugadores: ${
+                                        this.room.players
+                                            .filter((p) => p.id > 0)
+                                            .filter((p) => p.team.id === 2)
+                                            .map((p) => p.name)
+                                            .join("  -  ") || "Ninguno"
+                                    }
+                                `,
                                 inline: true,
                             },
                         ],
@@ -80,7 +84,7 @@ export default function (API: MainReturnType) {
                 ],
             });
 
-            await whClient.send({
+            await this.whClient.send({
                 files: [
                     {
                         attachment: buffer,
@@ -115,12 +119,14 @@ export default function (API: MainReturnType) {
             this.handleRecording();
         };
 
-        override initialize= () => {
-            this.hist = this.room.plugins.find(p => (p as any).name === "lmbMatchHistory") as MatchHistoryPlugin;
+        override initialize = () => {
+            this.hist = this.room.plugins.find(
+                (p) => (p as any).name === "lmbMatchHistory"
+            ) as MatchHistoryPlugin;
             if (!this.hist) {
                 throw new Error("DWHR: No se encontró el plugin de historial de partidos.");
             }
-        }
+        };
     }
 
     return new DWHReplays();

@@ -19,6 +19,9 @@ const defaultConfigFile: ServerConfigFile = {
             password: "root",
         },
     },
+    discord: {
+        whReplaysUrl: "",
+    },
     jwtSecret: "pajaritos",
 };
 
@@ -65,7 +68,9 @@ async function getApiKey(url: string, user: { username: string; password: string
     }
 }
 
+// TODO: eliminar y directamente meter la config en el global
 function parseGlobal(roomConfig: PajaritosRoomConfig, jwtSecret: string) {
+    global.roomConfig = roomConfig;
     global.webApi = roomConfig.webApi;
     global.jwtSecret = jwtSecret;
     global.geo = roomConfig.createParams.geo;
@@ -114,6 +119,9 @@ export class Config {
                 createParams: configFile.createParams,
                 botName: configFile.botName,
                 webApi: Object.assign({}, configFile.webApi, { key: apiKey }),
+                discord: {
+                    whReplaysUrl: configFile.discord?.whReplaysUrl || "",
+                },
             };
             parseGlobal(roomConfig, configFile.jwtSecret);
             return roomConfig;

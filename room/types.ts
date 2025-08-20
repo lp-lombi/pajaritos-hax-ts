@@ -12,9 +12,12 @@ declare global {
 export type CreateRoomParamsOptionalGeo = Omit<CreateRoomParams, "geo"> & { geo?: GeoLocation };
 
 export interface PajaritosRoomConfig {
-  createParams: CreateRoomParamsOptionalGeo;
-  botName?: string;
-  webApi: WebApiData
+    createParams: CreateRoomParamsOptionalGeo;
+    botName?: string;
+    webApi: WebApiData;
+    discord: {
+        whReplaysUrl: string;
+    };
 }
 export interface WebApiData {
   url: string;

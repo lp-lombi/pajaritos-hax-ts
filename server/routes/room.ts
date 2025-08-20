@@ -67,6 +67,7 @@ roomRouter.post("/start", async (req, res) => {
                 createParams,
                 botName: config.botName,
                 webApi: global.webApi,
+                discord: global.roomConfig.discord,
             });
             // se guarda la configuracion
             const newFile: PajaritosRoomConfigFile = {
@@ -80,6 +81,7 @@ roomRouter.post("/start", async (req, res) => {
                     },
                 },
                 jwtSecret: global.jwtSecret,
+                discord: global.roomConfig.discord
             };
             Config.createNewConfigFile(path.join(`${__dirname}/../roomConfig.json`), newFile);
 
