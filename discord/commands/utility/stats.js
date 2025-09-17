@@ -4,8 +4,26 @@ const { webApi } = require("../../config.json");
 module.exports = {
     data: new SlashCommandBuilder().setName("stats").setDescription("Muestra los stats."),
     async execute(interaction) {
+
+        let currentSeasonId = null;
+        const currentSeasonIdRes = await fetch(webApi.url + "/seasons/current", {
+            headers: {
+                "x-api-key": global.apiKey,
+            },
+        });
+        if (currentSeasonIdRes.ok) {
+            const data = await currentSeasonIdRes.json();
+            if (data && data.season.id) {
+                currentSeasonId = data.season.id;
+            } else {
+                console.log("No se pudo obtener la temporada actual");
+                await interaction.reply("Error :c");
+                return;
+            }
+        }
+
         if (webApi && webApi.url && global.apiKey) {
-            fetch(webApi.url + "/users?stats=true", {
+            fetch(webApi.url + "/users?stats=true&seasonId=" + currentSeasonId, {
                 headers: {
                     "x-api-key": global.apiKey,
                 },
