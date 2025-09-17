@@ -481,7 +481,12 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
                             try {
                                 if (that.auth) {
                                     const pageSize = 15;
-                                    const stats = (await that.webApiClient.getAllUsers(true))
+                                    const currentSeasonId = await that.webApiClient.getCurrentSeasonId();
+                                    if (!currentSeasonId) {
+                                        throw new Error("No se pudo obtener la temporada actual");
+                                    }
+                                    // TODO: permitir filtrar por temporada
+                                    const stats = (await that.webApiClient.getAllUsers(true, currentSeasonId))
                                         .filter((s) => s.stats)
                                         .sort((a, b) => b.stats!.rating - a.stats!.rating)
                                         .map(

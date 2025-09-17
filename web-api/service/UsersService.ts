@@ -53,7 +53,7 @@ export class UsersService {
 
         if (filter.bySeasonId !== undefined) {
             query.andWhere("season.id = :seasonId", { seasonId: filter.bySeasonId });
-        }
+        } 
         
         return query;
     }

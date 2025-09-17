@@ -50,10 +50,36 @@ export class WebApiClient {
         }
     }
 
-    // TODO: definir el endpoint para los stats
-    async getAllUsers(filterWithStats = false) {
+    async getCurrentSeasonId() {
         try {
-            const url = this.webApiData.url + "/users" + (filterWithStats ? "?stats=true" : "");
+            const response = await fetch(`${this.webApiData.url}/seasons/current`, {
+                headers: { "x-api-key": this.webApiData.key },
+            });
+            if (response.ok) {
+                const data = (await response.json()) as any;
+                if (data.season && data.season.id) {
+                    return data.season.id as number;
+                }
+                return null;
+            } else {
+                throw new Error(response.statusText);
+            }
+        } catch (error) {
+            console.error("Error al obtener la temporada actual: " + error);
+            return null;
+        }
+    }
+
+    // TODO: definir el endpoint para los stats
+    async getAllUsers(filterWithStats = false, bySeasonId?: number) {
+        try {
+            const queryParams: string[] = [];
+            if (filterWithStats) queryParams.push("stats=true");
+            if (bySeasonId !== undefined) queryParams.push(`seasonId=${bySeasonId}`);
+            const url =
+                this.webApiData.url +
+                "/users" +
+                (queryParams.length > 0 ? "?" + queryParams.join("&") : "");
             const response = await fetch(url, {
                 headers: { "x-api-key": this.webApiData.key },
             });

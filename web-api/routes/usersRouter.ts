@@ -14,9 +14,14 @@ const subscriptionsService = SubscriptionsService.getInstance();
 
 usersRouter.get("/", async (req, res) => {
     try {
-        const filterWithStats = req.query.stats === "true";
-        const filterSubscribed = req.query.subscribed === "true" ? true : req.query.subscribed === "false" ? false : undefined;
-        const users = await usersService.getAllUsers({withMatches: filterWithStats, subscribed: filterSubscribed});
+        const bySeasonId = req.query.seasonId ? parseInt(req.query.seasonId as string, 10) : undefined;
+        const withMatches = req.query.stats === "true";
+        const subscribed = req.query.subscribed === "true" ? true : req.query.subscribed === "false" ? false : undefined;
+        const users = await usersService.getAllUsers({
+            withMatches,
+            subscribed,
+            bySeasonId,
+        });
         res.send({ users });
     } catch (error) {
         console.error("Error al obtener todos los usuarios:", error);
