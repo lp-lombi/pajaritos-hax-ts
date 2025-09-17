@@ -54,9 +54,9 @@ export default function Economy(API: MainReturnType, webApiData: WebApiData) {
                 );
             }
             this.webApiClient = new WebApiClient(webApiData, this.phLib);
-            this.commands.registerCommand("!", "eco", async (msg, args) => {
+            this.commands.registerCommand("!", "exe", async (msg, args) => {
                 const player = this.phLib.getPlayer(msg.byId);
-                if (!player || !player.isLoggedIn) {
+                if (!player || !player.isLoggedIn || !player.user.id) {
                     return this.commands.chat.announce(
                         "Debés iniciar sesión para ver tu saldo.",
                         msg.byId,
@@ -74,8 +74,7 @@ export default function Economy(API: MainReturnType, webApiData: WebApiData) {
                             );
                         }
                         this.commands.chat.announce(
-                            `Saldo: ${userData.wallet.balance} Exes\nTotal acreditado: ${userData.wallet.totalEarned} Exes\nTotal debitado: ${userData.wallet.totalSpent} Exes\n\n
-                            Usa !eco t <usuario exacto> <monto> para transferir Exes a otro usuario.`,
+                            `Saldo actual: ${userData.wallet.balance} Exes\nTotal acreditado: ${userData.wallet.totalEarned} Exes\nTotal debitado: ${userData.wallet.totalSpent} Exes\n\nUsa ' !exe t <usuario exacto> <monto> ' para transferir Exes a otro usuario.\nUsa ' !exe c ' para ver las opciones de compra.`,
                             msg.byId
                         );
                     } catch (error) {
@@ -86,10 +85,15 @@ export default function Economy(API: MainReturnType, webApiData: WebApiData) {
                             "error"
                         );
                     }
-                } else if (args[0].toLowerCase() === "t" || args[0].toLowerCase() === "transferir") {
+
+                    // TRANSFERENCIAS
+                } else if (
+                    args[0].toLowerCase() === "t" ||
+                    args[0].toLowerCase() === "transferir"
+                ) {
                     if (args.length < 3) {
                         return this.commands.chat.announce(
-                            "Uso: !eco t <usuario exacto> <monto>",
+                            "Uso: !exe t <usuario exacto> <monto>",
                             msg.byId,
                             "error"
                         );
@@ -130,21 +134,19 @@ export default function Economy(API: MainReturnType, webApiData: WebApiData) {
                     try {
                         const transactionResult = await this.webApiClient.registerTransaction(
                             toUser.id,
-                            player.user.id as number,
+                            player.user.id,
                             amount,
                             "transfer"
                         );
-                        if (typeof transactionResult === "string") {
+                        if (!transactionResult.success) {
                             return this.commands.chat.announce(
-                                transactionResult,
+                                transactionResult.message,
                                 msg.byId,
                                 "error"
                             );
-                        } else if (!transactionResult) {
-                            throw new Error("Transacción fallida sin error explícito.");
                         }
                         this.commands.chat.announce(
-                            `Transferencia exitosa: Le enviaste ${amount} Exes a ${toUser.username}.`,
+                            `Transferencia exitosa. Le enviaste ${amount} Exes a ${toUser.username}.`,
                             msg.byId
                         );
                     } catch (error) {
@@ -153,6 +155,44 @@ export default function Economy(API: MainReturnType, webApiData: WebApiData) {
                             "Error al procesar la transacción. Intentá de nuevo más tarde.",
                             msg.byId,
                             "error"
+                        );
+                    }
+
+                    // COMPRAS
+                } else if (args[0] === "c") {
+                    if (args.length === 1) {
+                        return this.commands.chat.announce(
+                            "------------------------\nCANJE DE EXES\n------------------------\n[1] Mensaje destacado - 30 exe\nUso: !exe c 1 Este es un mensaje destacado!\n\n** PRESTAR ATENCIÓN A LA SINTAXIS DEL COMANDO YA QUE SE EJECUTA EN EL MOMENTO Y NO HAY VUELTA ATRÁS **",
+                            msg.byId
+                        );
+                    } else if (args[1] === "1") {
+                        if (args.length < 3) {
+                            return this.commands.chat.announce(
+                                "Uso: !exe c 1 Este es un mensaje destacado!",
+                                msg.byId,
+                                "error"
+                            );
+                        }
+                        const cost = 30;
+                        const message = args.slice(2).join(" ");
+                        const transactionResult = await this.webApiClient.registerTransaction(
+                            player.user.id,
+                            null,
+                            cost,
+                            "purchase"
+                        );
+                        if (!transactionResult.success) {
+                            return this.commands.chat.announce(
+                                transactionResult.message,
+                                msg.byId,
+                                "error"
+                            );
+                        }
+                        this.commands.chat.announce(
+                            `❇️${player.user.username}: ${message}`,
+                            null,
+                            "info-big",
+                            2
                         );
                     }
                 }

@@ -2,6 +2,11 @@ import { GetUserDto, LoginRequestDto } from "@shared/types/dtos/user.dto";
 import { PajaritosBaseLib, WebApiData } from "../../types";
 import { ErrorResponseDto, StatsDto, SubscriptionDto, TransactionDto } from "shared/types/dtos/misc.dto";
 
+interface TransaccionResult {
+    success: boolean;
+    message: string;
+}
+
 export class WebApiClient {
     constructor(private webApiData: WebApiData, private phLib: PajaritosBaseLib) {}
 
@@ -212,7 +217,7 @@ export class WebApiClient {
         byUserId: number | null,
         amount: number,
         type: "reward" | "purchase" | "transfer" | "penalty" = "reward"
-    ) {
+    ): Promise<TransaccionResult> {
         try {
             const response = await fetch(this.webApiData.url + "/economy/transaction", {
                 method: "POST",
@@ -224,16 +229,16 @@ export class WebApiClient {
             });
             if (response.ok) {
                 const data = (await response.json()) as any;
-                return data.transaction as TransactionDto;
+                return { success: true, message: "Transacción registrada correctamente" };
             } else {
                 const errorData = (await response.json()) as ErrorResponseDto;
                 if (errorData && errorData.error) {
-                    return "Error: " + errorData.error;
+                    return { success: false, message: "Error: " + errorData.error };
                 }
             }
         } catch (error) {
             console.error("Error al registrar la transacción: " + error);
         }
-        return null;
+        return { success: false, message: "Error desconocido al registrar la transacción" };
     }
 }

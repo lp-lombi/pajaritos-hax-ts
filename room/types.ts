@@ -51,7 +51,7 @@ export type AnnouncementStyle =
   | "alert"
   | "red-stats"
   | "blue-stats"
-  | "vip-message";
+  | "vip-message"
 
 /** Jugador de Haxball con propiedades adicionales */
 export type PHUser = {
