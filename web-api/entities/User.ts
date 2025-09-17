@@ -4,6 +4,7 @@ import { dateTransformer, nullableDateTransformer } from "../utils/transformers"
 import { Subscription } from "./Subscription/Subscription";
 import { AppDataSource } from "../db/data-source";
 import { Season } from "./Season";
+import { Wallet } from "./Economy";
 
 @Entity("users")
 export class User {
@@ -39,6 +40,9 @@ export class User {
     @OneToMany(() => Stats, stats => stats.user)
     stats: Stats[];
 
+    @OneToOne(() => Wallet, wallet => wallet.user)
+    wallet: Wallet;
+
     @OneToOne(() => Subscription, subscription => subscription.user, { nullable: true })
     subscription: Subscription | null;
 
@@ -49,5 +53,12 @@ export class User {
         const currentSeason = await seasonRepository.findOneOrFail({ where: { isCurrent: true } });
         const stats = statsRepository.create({ user: this, season: currentSeason });
         await statsRepository.save(stats);
+    }
+
+    @AfterInsert()
+    async createWallet() {
+        const walletRepository = AppDataSource.getRepository(Wallet);
+        const wallet = walletRepository.create({ user: this, userId: this.id });
+        await walletRepository.save(wallet);
     }
 }

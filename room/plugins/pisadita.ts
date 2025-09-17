@@ -4,15 +4,16 @@ import {
     OperationType,
     SendInputEvent,
 } from "@shared/types/node-haxball";
-import { CommandsPlugin, Input, PajaritosBaseLib } from "../types";
+import { CommandsPlugin, PajaritosBaseLib } from "../types";
 import {
     calcBallDirection,
     calcDistance as calcDiscsDistance,
     calcMagnitude,
     discretizeDirection,
-    getDirectionOnly,
+    getMovementDirectionWithoutKick as getKickDirection,
     getOppositeDirection,
-    getPressedKeys,
+    isKicking,
+    MovementDirection,
 } from "./res/physUtils";
 
 export default function (API: MainReturnType) {
@@ -38,8 +39,7 @@ export default function (API: MainReturnType) {
         override onOperationReceived = (type: OperationType, event: HaxballEvent) => {
             if (type === 3 && this.active) {
                 const inputEvent = event as SendInputEvent;
-                const pressedKeys = getPressedKeys(inputEvent.input);
-                if (!pressedKeys.includes(Input.Kick)) {
+                if (!isKicking(inputEvent.input)) {
                     this.preventKickPlayerIds = this.preventKickPlayerIds.filter(
                         (id) => id !== inputEvent.byId
                     );
@@ -49,15 +49,15 @@ export default function (API: MainReturnType) {
                 const player = this.phLib.getPlayer(inputEvent.byId);
                 if (!player || !player.disc || !ball) return true;
                 if (this.preventKickPlayerIds.includes(player.id)) {
-                    (event as SendInputEvent).input = getDirectionOnly(inputEvent.input);
+                    (event as SendInputEvent).input = getKickDirection(inputEvent.input);
                     return true;
                 }
                 const ballDirection = calcBallDirection(player.disc, ball);
                 const discretizedBallDirection = discretizeDirection(ballDirection);
                 const isMovingOppositeDir =
-                    inputEvent.input !== Input.None &&
-                    inputEvent.input !== Input.Kick &&
-                    getOppositeDirection(getDirectionOnly(inputEvent.input)) ===
+                    inputEvent.input !== MovementDirection.None &&
+                    inputEvent.input !== MovementDirection.KickNone &&
+                    getOppositeDirection(getKickDirection(inputEvent.input)) ===
                         discretizedBallDirection;
                 if (!isMovingOppositeDir) return true;
                 const distanceToBall = calcDiscsDistance(player.disc, ball);
@@ -82,7 +82,7 @@ export default function (API: MainReturnType) {
                     this.preventKickPlayerIds.push(player.id);
 
                     // transforma el evento de entrada para que no se lo considere un kick
-                    (event as SendInputEvent).input = getDirectionOnly(inputEvent.input);
+                    (event as SendInputEvent).input = getKickDirection(inputEvent.input);
                 }
             }
             return true;

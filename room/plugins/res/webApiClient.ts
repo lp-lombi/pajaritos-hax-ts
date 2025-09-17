@@ -1,6 +1,6 @@
 import { GetUserDto, LoginRequestDto } from "@shared/types/dtos/user.dto";
 import { PajaritosBaseLib, WebApiData } from "../../types";
-import { StatsDto, SubscriptionDto } from "shared/types/dtos/misc.dto";
+import { ErrorResponseDto, StatsDto, SubscriptionDto, TransactionDto } from "shared/types/dtos/misc.dto";
 
 export class WebApiClient {
     constructor(private webApiData: WebApiData, private phLib: PajaritosBaseLib) {}
@@ -10,6 +10,30 @@ export class WebApiClient {
             const response = await fetch(`${this.webApiData.url}/users/${userId}`, {
                 headers: { "x-api-key": this.webApiData.key },
             });
+            if (response.ok) {
+                const data = (await response.json()) as any;
+                if (data.user) {
+                    return data.user as GetUserDto;
+                }
+                return null;
+            } else {
+                console.error("Error al obtener el usuario: " + response.status);
+                return null;
+            }
+        } catch (error) {
+            console.error("Error al obtener el usuario: " + error);
+            return null;
+        }
+    }
+
+    async getUserByUsername(username: string) {
+        try {
+            const response = await fetch(
+                `${this.webApiData.url}/users?username=${encodeURIComponent(username)}`,
+                {
+                    headers: { "x-api-key": this.webApiData.key },
+                }
+            );
             if (response.ok) {
                 const data = (await response.json()) as any;
                 if (data.user) {
@@ -48,7 +72,7 @@ export class WebApiClient {
 
     async requestLogin(username: string, password: string) {
         try {
-            const dto: LoginRequestDto = { username, password }
+            const dto: LoginRequestDto = { username, password };
             const response = await fetch(this.webApiData.url + "/auth/login", {
                 method: "POST",
                 headers: { "x-api-key": this.webApiData.key, "Content-Type": "application/json" },
@@ -155,5 +179,35 @@ export class WebApiClient {
             console.error("Error al actualizar los datos de suscripción: " + error);
             return null;
         }
+    }
+
+    async registerTransaction(
+        toUserId: number,
+        byUserId: number | null,
+        amount: number,
+        type: "reward" | "purchase" | "transfer" | "penalty" = "reward"
+    ) {
+        try {
+            const response = await fetch(this.webApiData.url + "/economy/transaction", {
+                method: "POST",
+                headers: {
+                    "x-api-key": this.webApiData.key,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ toUserId, byUserId, amount, type }),
+            });
+            if (response.ok) {
+                const data = (await response.json()) as any;
+                return data.transaction as TransactionDto;
+            } else {
+                const errorData = (await response.json()) as ErrorResponseDto;
+                if (errorData && errorData.error) {
+                    return "Error: " + errorData.error;
+                }
+            }
+        } catch (error) {
+            console.error("Error al registrar la transacción: " + error);
+        }
+        return null;
     }
 }

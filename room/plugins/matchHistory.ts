@@ -424,7 +424,10 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
 
             this.printEndMatchStats();
 
-            this.fileMatchHistory();
+            // Espera un tick para que los otros plugins puedan usar el historial antes de archivarlo
+            API.Utils.runAfterGameTick(() => {
+                this.fileMatchHistory();
+            }, 1);
         };
 
         override onGameStop = () => {

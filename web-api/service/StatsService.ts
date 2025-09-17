@@ -77,7 +77,6 @@ export class StatsService {
         stats.assists += newData.assists || 0;
         stats.matches += newData.matches || 0;
         stats.wins += newData.wins || 0;
-        console.log(stats);
 
         await this.statsRepository.save(stats);
         return createStatsDto(stats);

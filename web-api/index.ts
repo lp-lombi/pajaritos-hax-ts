@@ -2,6 +2,7 @@ import { EnvFile } from "./utils/EnvFile";
 import path from "path";
 EnvFile.parse(path.join(__dirname, ".env"));
 import { AppDataSource, defaultDbValues } from "./db/data-source";
+import { economyRouter } from "./routes/economyRouter";
 
 // var discordBot = require(path.join(__dirname, "./discord/main.js"));
 
@@ -26,6 +27,7 @@ async function init() {
     app.use("/api/v2/auth", authRouter);
     app.use("/api/v2/users", requireApiKey, usersRouter);
     app.use("/api/v2/seasons", requireApiKey, seasonsRouter);
+    app.use("/api/v2/economy", requireApiKey, economyRouter);
     app.use("/api/v2/bans", requireApiKey, bansRouter);
     app.use("/api/v2/rooms", requireApiKey, roomsRouter);
 

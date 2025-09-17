@@ -30,10 +30,35 @@ export interface SubscriptionDto {
     emoji: string | null;
 }
 
+export interface WalletDto {
+    balance: number;
+    totalEarned: number;
+    totalSpent: number;
+}
+
+export interface TransactionDto {
+    type: "reward" | "purchase" | "transfer" | "penalty";
+    amount: number;
+    date: string;
+    toUserId: number;
+    byUserId?: number | null;
+    id: number;
+}
+
+export interface TransactionResponseDto {
+    success: boolean;
+    message: string;
+    transaction?: TransactionDto;
+}
+
 export interface ApiRoomDto {
     name: string;
     link: string;
     players: number;
     maxPlayers: number;
     ttl: number; // Time to live in seconds
+}
+
+export interface ErrorResponseDto {
+    error: string;
 }

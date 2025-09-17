@@ -1,4 +1,4 @@
-import { StatsDto, SubscriptionDto } from "./misc.dto";
+import { StatsDto, SubscriptionDto, WalletDto } from "./misc.dto";
 
 export interface GetUserDto {
     id: number;
@@ -8,6 +8,7 @@ export interface GetUserDto {
     createDate: string;
     lastLoginDate: string | null;
     stats: StatsDto | null; // Puede ser null ya que se podrán obtener DTOs de otras temporadas
+    wallet: WalletDto;
     subscription: SubscriptionDto | null;
 }
 

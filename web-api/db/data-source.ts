@@ -8,6 +8,7 @@ import { Ban } from "../entities/Ban";
 import { Subscription } from "../entities/Subscription/Subscription";
 import { SubscriptionProperty } from "../entities/Subscription/SubscriptionProperty";
 import { SubscriptionPropertyType } from "../entities/Subscription/SubscriptionPropertyType";
+import { Transaction, Wallet } from "../entities/Economy";
 
 export const AppDataSource = new DataSource({
     type: "sqlite",
@@ -22,6 +23,8 @@ export const AppDataSource = new DataSource({
         Subscription,
         SubscriptionProperty,
         SubscriptionPropertyType,
+        Wallet,
+        Transaction,
     ],
     migrations: [],
     subscribers: [],

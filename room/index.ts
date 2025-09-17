@@ -20,6 +20,7 @@ import CustomDisc from "./plugins/customDisc";
 import { version } from "./package.json";
 import Pisadita from "./plugins/pisadita";
 import dwhReplays from "./plugins/dwh-replays";
+import Economy from "./plugins/economy";
 
 const haxball = NodeHaxball();
 global.roomVersion = version;
@@ -57,6 +58,7 @@ export default async function HaxballRoom(roomConfig: PajaritosRoomConfig) {
                     Orbs(haxball),
                     Announcements(haxball),
                     CustomDisc(haxball),
+                    Economy(haxball, commandsData.webApi),
 
                     // externos
                     dwhReplays(haxball, roomConfig.discord?.whReplaysUrl as string),

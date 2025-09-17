@@ -36,6 +36,11 @@ export function createUserDto(
         createDate: user.createDate.toISOString(),
         lastLoginDate: user.lastLoginDate?.toISOString() || null,
         stats: userStats ? createStatsDto(userStats) : null,
+        wallet: user.wallet ? {
+            balance: user.wallet.balance,
+            totalEarned: user.wallet.totalEarned,
+            totalSpent: user.wallet.totalSpent,
+        } : { balance: 0, totalEarned: 0, totalSpent: 0 },
         subscription: userSubscription ? createSubscriptionDto(userSubscription) : null,
     };
 }

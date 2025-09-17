@@ -6,6 +6,7 @@ import { Stats } from "../entities/Stats";
 import { Season } from "../entities/Season";
 import { GetUserDto } from "@shared/types/dtos/user.dto";
 import { createUserDto } from "../utils/dto-mappers";
+import { Wallet } from "../entities/Economy";
 
 export interface UserFilters {
     withMatches?: boolean;
@@ -19,6 +20,7 @@ export class UsersService {
     private constructor(
         private usersRepository = AppDataSource.getRepository(User),
         private statsRepository = AppDataSource.getRepository(Stats),
+        private walletsRepository = AppDataSource.getRepository(Wallet),
         private seasonsRepository = AppDataSource.getRepository(Season)
     ) {}
 
@@ -35,7 +37,8 @@ export class UsersService {
             .leftJoinAndSelect("user.subscription", "subscription")
             .leftJoinAndSelect("subscription.properties", "property")
             .leftJoinAndSelect("property.type", "type")
-            .leftJoinAndSelect("stats.season", "season");
+            .leftJoinAndSelect("stats.season", "season")
+            .leftJoinAndSelect("user.wallet", "wallet");
         if (filter.withMatches) {
             query.andWhere("stats.matches > :matches", { matches: 0 });
         }
@@ -50,9 +53,8 @@ export class UsersService {
 
         if (filter.bySeasonId !== undefined) {
             query.andWhere("season.id = :seasonId", { seasonId: filter.bySeasonId });
-        } else {
-            query.andWhere("season.isCurrent = true");
         }
+        
         return query;
     }
 
@@ -61,6 +63,7 @@ export class UsersService {
      */
     async getAllUsers(filter: UserFilters): Promise<GetUserDto[]> {
         const users = await this.userQuery(filter).getMany();
+        console.log(users);
         return users.map((user) => {
             return createUserDto(
                 user,
@@ -116,7 +119,6 @@ export class UsersService {
             where: { user: newUser, season },
             relations: ["season"]
         });
-        console.log()
         return createUserDto(newUser, newStats);
     }
 
