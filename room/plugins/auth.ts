@@ -22,7 +22,7 @@ export default function (API: MainReturnType, webApiData: WebApiData) {
         calcDaysBetween(date1: Date, date2: Date) {
             const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
             const differenceInMilliseconds = Math.abs(
-                date2.getMilliseconds() - date1.getMilliseconds()
+                date2.getTime() - date1.getTime()
             );
             return Math.floor(differenceInMilliseconds / oneDayInMilliseconds);
         }

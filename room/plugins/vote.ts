@@ -123,6 +123,12 @@ export default function Votes(API: MainReturnType) {
                                     break;
                                 }
                                 case "kick": {
+                                    if (this.currentElection) {
+                                        return this.commands.chat.announce(
+                                            `Ya hay una votación activa: ${this.currentElection.description}`,
+                                            msg.byId
+                                        );
+                                    }
                                     if (args.length < 2) {
                                         let str = this.commands.chat.getPlayersIdsString(
                                             this.phLib.players
